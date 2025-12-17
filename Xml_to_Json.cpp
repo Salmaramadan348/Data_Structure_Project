@@ -272,3 +272,15 @@ string toJSON(XMLNode* root) {
 
     return result;
 }
+string convertXMLtoJSON(const string& xmlText) {
+    XMLNode* root = parseXML(xmlText);
+
+    if (!root) {
+        return "";
+    }
+
+    string json = toJSON(root);
+    deleteXMLTree(root);
+    return json;
+}
+
