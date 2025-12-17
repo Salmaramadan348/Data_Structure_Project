@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "XMLValidator.h"
+#include "Xml_to_Json.h"
 using namespace std;
 
 string readFile(const string& path) {
@@ -26,6 +27,11 @@ int main() {
         string fixedXML = fixXML(tags);
         cout << "\n--- Fixed XML ---\n";
         cout << fixedXML;
+    }
+    string json = convertXMLtoJSON(xmlText);
+    if (!json.empty()) {
+        cout << "\n--- JSON Output ---\n";
+        cout << json << endl;
     }
     return 0;
 }
