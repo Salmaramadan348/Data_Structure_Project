@@ -1,131 +1,74 @@
-﻿#include <iostream>
+﻿#include "XmlValidator.h"
+#include "XmlParser.h"
 #include <stack>
-#include <vector>
-#include <string>
-#include <algorithm> // for std::reverse
+#include <iostream>
+
 using namespace std;
 
-
-struct XmlError {
-    string message;
-    int lineNumber=-1;
-};
-
-vector<XmlError> xmlErrors; 
-
-bool isOpeningTag(const string& tag) {
-    
-    return !tag.empty() && tag[0] == '<' && tag[1] != '/' && tag.back() == '>';
+bool XmlValidator::isOpeningTag(const std::string& tag) {
+    return tag.size() > 2 && tag[0] == '<' && tag[1] != '/' && tag.back() == '>';
 }
 
-bool isClosingTag(const string& tag) {
-   
-    return !tag.empty() && tag[0] == '<' && tag[1] == '/' && tag.back() == '>';
+bool XmlValidator::isClosingTag(const std::string& tag) {
+    return tag.size() > 3 && tag[0] == '<' && tag[1] == '/' && tag.back() == '>';
 }
 
-string getTagName(const string& tag) {
-    
-    if (!tag.empty() && tag.front() == '<' && tag.back() == '>') {
-        if (tag[1] == '/') return tag.substr(2, tag.size() - 3);
-        return tag.substr(1, tag.size() - 2);
-    }
+std::string XmlValidator::getTagName(const std::string& tag) {
+    if (isOpeningTag(tag)) return tag.substr(1, tag.size() - 2);
+    if (isClosingTag(tag)) return tag.substr(2, tag.size() - 3);
     return "";
 }
 
+#include "XmlValidator.h"
+#include "XmlParser.h"
+#include <stack>
+#include <iostream>
+#include <string>
+#include <vector>
 
-vector<string> extractTags(const string& xmlText) {
-    vector<string> tags;
-    string current; //for the content between tags
-    size_t i = 0;
+using namespace std;
 
-    while (i < xmlText.size()) {
-        if (xmlText[i] == '<') {
+std::vector<XmlError> XmlValidator::checkXml(const std::string& xmlContent) {
+    XmlParser parser;
+    std::vector<std::string> tokens = parser.extractTags(xmlContent);
 
-            if (!current.empty()) {
-                string content = current;
-                while (!content.empty() && isspace(content.front())) content.erase(0, 1);//remove leading spaces
-                while (!content.empty() && isspace(content.back())) content.pop_back();//remove trailing spaces
-                if (!content.empty()) tags.push_back(content);//add all content 
-                current.clear();//clear current for next content
-            }
+    std::stack<std::pair<std::string, int>> st;
+    std::vector<XmlError> errorList;
+    size_t currentSearchPos = 0;
 
-            size_t j = i + 1;//find the end of the tag
-            while (j < xmlText.size() && xmlText[j] != '>') j++; //find the closing '>' of the tag
-
-            if (j < xmlText.size()) {
-                string tag = xmlText.substr(i, j - i + 1);//extract the tag name
-                tags.push_back(tag);
-                i = j + 1;
-            }
-            else {
-                current += xmlText[i];//if no closing '>' found, treat as content
-                i++;
-            }
-        }
-        else {
-            current += xmlText[i];//add to content
-            i++;
-        }
-    }
-
-    if (!current.empty()) {
-        string content = current;//process any remaining content
-        while (!content.empty() && isspace(content.front())) content.erase(0, 1);
-        while (!content.empty() && isspace(content.back())) content.pop_back();
-        if (!content.empty()) tags.push_back(content);//add remaining content
-    }
-
-    return tags;//return all tags and content
-}
-
-
-vector<XmlError> checkXML(const string& xmlContent) {
-
-    xmlErrors.clear();
-    vector<string> tokens = extractTags(xmlContent);
-
-    stack<pair<string, int>> st; // pair of tag name and line number
-    vector<XmlError> errors; 
-
-    int currentPos = 0; // to track position in xmlContent
-
-    for (int i = 0; i < (int)tokens.size(); i++) {
-
-        const string& token = tokens[i];
-        size_t foundPos = xmlContent.find(token, currentPos);
-
+    for (const std::string& token : tokens) {
+        // --- PRECISE LINE TRACKING ---
+        size_t foundPos = xmlContent.find(token, currentSearchPos);
         int lineNumber = 1;
-        if (foundPos != string::npos) {
-            lineNumber = 1;
+        if (foundPos != std::string::npos) {
             for (size_t j = 0; j < foundPos; j++) {
-                if (xmlContent[j] == '\n')
-                    lineNumber++;
+                if (xmlContent[j] == '\n') lineNumber++;
             }
-            currentPos = foundPos + token.length(); // update current position
+            currentSearchPos = foundPos + token.length();
         }
 
+        // --- VALIDATION LOGIC ---
         if (isOpeningTag(token)) {
-            st.push(make_pair(getTagName(token), lineNumber));
+            st.push({ getTagName(token), lineNumber });
         }
         else if (isClosingTag(token)) {
-            string closingName = getTagName(token);
+            std::string closingName = getTagName(token);
 
             if (st.empty()) {
-                errors.push_back({
-                    "Extra closing tag: " + token,
-                    lineNumber
-                    });
+                errorList.push_back({ lineNumber, "Extra closing tag: " + token + " at line " + std::to_string(lineNumber) });
                 continue;
             }
 
-            string openName = st.top().first;
+            std::string openName = st.top().first;
             int openLine = st.top().second;
 
-            if (openName != closingName) {
-
+            if (openName == closingName) {
+                st.pop();
+            }
+            else {
                 bool foundInStack = false;
-                stack<pair<string, int>> tempStack = st;
-                vector<pair<string, int>> unclosedTags;
+                std::stack<std::pair<std::string, int>> tempStack = st;
+                std::vector<std::pair<std::string, int>> unclosedTags;
 
                 while (!tempStack.empty()) {
                     if (tempStack.top().first == closingName) {
@@ -137,135 +80,86 @@ vector<XmlError> checkXML(const string& xmlContent) {
                 }
 
                 if (foundInStack) {
-
-                    std::reverse(unclosedTags.begin(), unclosedTags.end());
-
-                    
-                    errors.push_back({ "Missing closing tags for (out of order):", lineNumber });
-
-                    
+                    // MATCHING THE FORMAT IN YOUR 3rd IMAGE
+                    std::string msg = "Missing closing tags for (out of order):";
                     for (const auto& tag : unclosedTags) {
-                        errors.push_back({
-                           "    - </" + tag.first + "> (opened at line " + to_string(tag.second) + ")"
-                           
-                            });
+                        msg += "\n    - </" + tag.first + "> (opened at line " + std::to_string(tag.second) + ")";
                     }
 
+                    // We report this at the line where we discovered the out-of-order tag
+                    errorList.push_back({ lineNumber, msg });
 
                     st = tempStack;
-                    st.pop(); // Remove the now-matched opening tag
+                    st.pop(); // Pop the matched tag
                 }
-
                 else {
-                    errors.push_back({
-                        "Tag mismatch: " + token + " doesn't match <" + openName + "> at line " ,
-                        lineNumber
-                        });
-                    st.pop(); // Remove the mismatched opening tag
+                    // MATCHING THE FORMAT IN YOUR 3rd IMAGE
+                    errorList.push_back({ lineNumber, "Tag mismatch: </" + closingName + "> doesn't match <" + openName + "> at line " + std::to_string(openLine) });
+                    st.pop();
                 }
-            }
-            else {
-                st.pop(); // Match found
             }
         }
     }
 
+    // --- FINAL CHECK (END OF FILE) ---
     while (!st.empty()) {
-        string tag = st.top().first;
+        std::string tag = st.top().first;
         int line = st.top().second;
         st.pop();
-        errors.push_back({
-            "Missing closing tag: </" + tag + "> for <" + tag + ">",
-            line
-            });
+
+        errorList.push_back({ line, "Missing closing tag: </" + tag + "> for <" + tag + "> at line " + std::to_string(line) });
     }
 
-    return errors;
+    return errorList;
+}
+// Tree-based fixer (unchanged)
+std::string XmlValidator::fixXMLUsingTree(const std::vector<std::string>& tokens) {
+    Tree tree;
+    TreeNode* current = tree.getRoot();
+
+    for (const std::string& token : tokens) {
+        if (isOpeningTag(token)) {
+            std::string name = getTagName(token);
+            if (!current->tagValue.empty() && current->name != "root") current = current->parent;
+            TreeNode* newNode = new TreeNode(name);
+            current->addChild(newNode);
+            current = newNode;
+        }
+        else if (isClosingTag(token)) {
+            std::string closingName = getTagName(token);
+            TreeNode* temp = current;
+            bool found = false;
+            while (temp != nullptr && temp->name != "root") {
+                if (temp->name == closingName) { found = true; break; }
+                temp = temp->parent;
+            }
+            if (found) current = temp->parent;
+        }
+        else {
+            std::string cleaned = XmlParser::trim(token);
+            if (!cleaned.empty()) current->tagValue = cleaned;
+        }
+    }
+    return traverse(tree.getRoot());
 }
 
-string fixXML(const vector<string>& tags) {
-    stack<string> st;            //to track opened tags    
-    vector<string> output;     //to store the fixed XML structure       
-    stack<bool> hasContent;    //to track if a tag has content       
-
-    for (size_t i = 0; i < tags.size(); i++) {
-
-        const string tag = tags[i];
-
-        if (isOpeningTag(tag)) {
-
-            string tagName = getTagName(tag);
-
-            if (!st.empty() && hasContent.top() && st.top() != tagName) {
-                output.push_back("</" + st.top() + ">");
-                st.pop();
-                hasContent.pop();
-            }
-
-            st.push(tagName);
-            hasContent.push(false);
-            output.push_back(tag);
-        }
-
-        else if (isClosingTag(tag)) {
-
-            string closingName = getTagName(tag);
-
-            if (!st.empty()) {
-
-                string correctName = st.top();
-                output.push_back("</" + correctName + ">");
-                st.pop();
-                hasContent.pop();
-            }
-            else {
-                output.push_back("<" + closingName + ">");
-                output.push_back(tag);
-            }
-        }
-
-        else {
-
-            string content = tag;
-
-            while (!content.empty() && isspace(content.front()))
-                content.erase(0, 1);
-
-            while (!content.empty() && isspace(content.back()))
-                content.pop_back();
-
-            if (!content.empty()) {
-                output.push_back(content);
-
-                if (!st.empty()) {
-                    bool topValue = hasContent.top();
-                    hasContent.pop();
-                    topValue = true;
-                    hasContent.push(topValue);
-                }
-            }
-        }
+std::string XmlValidator::traverse(TreeNode* node, int indent) {
+    if (!node) return "";
+    if (node->name == "root") {
+        string res = "";
+        for (auto child : node->children) res += traverse(child, indent);
+        return res;
     }
-
-    while (!st.empty()) {
-        output.push_back("</" + st.top() + ">");
-        st.pop();
-        if (!hasContent.empty()) {
-            hasContent.pop();
-        }
+    string result;
+    string tab(indent, ' ');
+    if (!node->children.empty()) {
+        result += tab + "<" + node->name + ">\n";
+        if (!node->tagValue.empty()) result += tab + "  " + node->tagValue + "\n";
+        for (auto child : node->children) result += traverse(child, indent + 2);
+        result += tab + "</" + node->name + ">\n";
     }
-
-    string fixedXML = "";
-
-    for (size_t i = 0; i < output.size(); i++) {
-
-        const string t = output[i];
-
-        fixedXML += t;
-
-        if (isOpeningTag(t) || isClosingTag(t))
-            fixedXML += "\n";
+    else {
+        result += tab + "<" + node->name + ">" + node->tagValue + "</" + node->name + ">\n";
     }
-
-    return fixedXML;
+    return result;
 }

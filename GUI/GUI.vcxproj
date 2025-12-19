@@ -131,10 +131,16 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="Tree.h" />
+    <ClInclude Include="TreeNode.h" />
+    <ClInclude Include="XmlParser.h" />
     <ClInclude Include="XmlValidator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="Tree.cpp" />
+    <ClCompile Include="TreeNode.cpp" />
+    <ClCompile Include="XmlParser.cpp" />
     <ClCompile Include="XmlValidator.cpp" />
   </ItemGroup>
   <ItemGroup>
