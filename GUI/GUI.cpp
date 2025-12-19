@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "test.h"
 #include "XmlValidator.h"
+#include  "XmlParser.h"
 
 #include <sstream>
 #include <fstream>
@@ -12,6 +13,8 @@
 #include <commctrl.h>
 
 #pragma comment(lib, "Comctl32.lib")
+XmlValidator validator;
+XmlParser parser;
 
 #define MAX_LOADSTRING 100
 
@@ -224,63 +227,69 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 lastFilePath = fileName;
                 lastDirectory = std::wstring(fileName).substr(0, std::wstring(fileName).find_last_of(L"\\/"));
 
-
                 std::ifstream file(wstringToUtf8(fileName));
                 if (file) {
                     std::stringstream buffer;
                     buffer << file.rdbuf();
 
-                    auto parts = extractTags(buffer.str());
-                    std::string formatted;
-                    for (auto& p : parts)
-                        formatted += p + "\r\n";
-
-                    SetWindowTextW(hEditor, utf8ToWstring(formatted).c_str());
+                    // Load raw content directly to preserve original formatting and spacing
+                    SetWindowTextW(hEditor, utf8ToWstring(buffer.str()).c_str());
                 }
             }
         }
         break;
 
-
-
-
         case ID_BTN_FIX:
         {
+            // 1. Get text from editor
             int len = GetWindowTextLengthW(hEditor);
-            std::wstring wbuf(len, L'\0');
+            std::wstring wbuf(len + 1, L'\0');
             GetWindowTextW(hEditor, &wbuf[0], len + 1);
 
-            auto fixed = fixXML(extractTags(wstringToUtf8(wbuf)));
-            auto parts = extractTags(fixed);
+            std::string input = wstringToUtf8(wbuf);
 
-            std::string formatted;
-            for (auto& p : parts) formatted += p + "\r\n";
+            // 2. Fix the XML using your Tree logic
+            std::string fixed = validator.fixXMLUsingTree(parser.extractTags(input));
 
-            SetWindowTextW(hEditor, utf8ToWstring(formatted).c_str());
+            // 3. Re-extract tags to remove the tree's formatting/indentation
+            auto parts = parser.extractTags(fixed);
+
+            std::string noFormatResult;
+            for (auto& p : parts) {
+                // Remove any leading/trailing spaces or newlines from the tag/data
+                size_t first = p.find_first_not_of(" \t\n\r");
+                if (std::string::npos == first) continue; // Skip if it's only whitespace
+                size_t last = p.find_last_not_of(" \t\n\r");
+                std::string trimmed = p.substr(first, (last - first + 1));
+
+                // Add to result starting at the beginning of the line
+                noFormatResult += trimmed + "\r\n";
+            }
+
+            // 4. Update the editor
+            SetWindowTextW(hEditor, utf8ToWstring(noFormatResult).c_str());
         }
         break;
 
         case ID_BTN_VALIDATE:
         {
             int len = GetWindowTextLengthW(hEditor);
-            std::wstring wbuf(len, L'\0');
+            std::wstring wbuf(len + 1, L'\0');
             GetWindowTextW(hEditor, &wbuf[0], len + 1);
 
-            auto errors = checkXML(wstringToUtf8(wbuf));
+            // Call the new checkXml function which returns std::vector<XmlError>
+            auto errors = validator.checkXml({ wstringToUtf8(wbuf) });
 
-            if (errors.empty())
-                MessageBoxW(hWnd, L"XML is valid!", L"Success", MB_OK);
+
+            if (errors.empty()) {
+                MessageBoxW(hWnd, L"XML is valid!", L"Success", MB_OK | MB_ICONINFORMATION);
+            }
             else {
-                std::string msg;
-                for (auto& e : errors) {
-                    if (e.lineNumber > 0)
-                        msg += "Line " + std::to_string(e.lineNumber) + ": " + e.message + "\n";
-                    else
-                        msg += e.message + "\n"; 
+                std::string msg = "Found " + std::to_string(errors.size()) + " error(s):\n\n";
+                for (const auto& e : errors) {
+                    msg += "Line " + std::to_string(e.lineNumber) + ": " + e.message + "\n";
                 }
-
-
-                MessageBoxW(hWnd, utf8ToWstring(msg).c_str(), L"Errors", MB_OK | MB_ICONERROR);
+                MessageBoxW(hWnd, utf8ToWstring(msg).c_str(), L"Validation Errors", MB_OK | MB_ICONERROR);
             }
         }
         break;
