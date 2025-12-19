@@ -1,14 +1,31 @@
-#ifndef XMLVALIDATOR_H
-#define XMLVALIDATOR_H
+#ifndef XML_VALIDATOR_H
+#define XML_VALIDATOR_H
 
 #include <string>
 #include <vector>
+#include "Tree.h"
 
-std::vector<std::string> extractTags(const std::string& xmlText);
-std::string fixXML(const std::vector<std::string>& tags);
-bool isOpeningTag(const std::string& tag);
-bool isClosingTag(const std::string& tag);
-std::string getTagName(const std::string& tag);
-bool checkXML(const std::vector<std::string>& tags);
+// Structure to hold error details for the GUI
+struct XmlError {
+    int lineNumber;
+    std::string message;
+};
+
+class XmlValidator {
+public:
+    
+    static bool isOpeningTag(const std::string& tag);
+    static bool isClosingTag(const std::string& tag);
+    static std::string getTagName(const std::string& tag);
+
+    
+    std::string fixXMLUsingTree(const std::vector<std::string>& tokens);
+
+    std::vector<XmlError> checkXml(const std::string& xmlContent);
+
+private:
+    
+    std::string traverse(TreeNode* node, int indent = 0);
+};
 
 #endif
