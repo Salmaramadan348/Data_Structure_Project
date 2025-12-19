@@ -1,21 +1,31 @@
-﻿
+﻿#ifndef XML_VALIDATOR_H
+#define XML_VALIDATOR_H
 
-#pragma once
-
-#include <vector>
 #include <string>
+#include <vector>
+#include "Tree.h"
 
-// بنية بيانات لتخزين معلومات الخطأ
+// Structure to hold error details for the GUI
 struct XmlError {
-    std::string message;
     int lineNumber;
+    std::string message;
 };
 
-// التصريحات العامة للدوال
-std::vector<std::string> extractTags(const std::string& xmlText);
-std::vector<XmlError> checkXML(const std::string& xmlContent);
-std::string fixXML(const std::vector<std::string>& tags);
-bool isOpeningTag(const std::string& tag);
-bool isClosingTag(const std::string& tag);
-std::string getTagName(const std::string& tag);
+class XmlValidator {
+public:
+    
+    static bool isOpeningTag(const std::string& tag);
+    static bool isClosingTag(const std::string& tag);
+    static std::string getTagName(const std::string& tag);
 
+    
+    std::string fixXMLUsingTree(const std::vector<std::string>& tokens);
+
+    std::vector<XmlError> checkXml(const std::string& xmlContent);
+
+private:
+    
+    std::string traverse(TreeNode* node, int indent = 0);
+};
+
+#endif

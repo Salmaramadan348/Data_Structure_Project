@@ -2,11 +2,10 @@
 x64/
 Debug/
 Release/
-
+*.ipch
 *.obj
-*.exe
 *.pdb
 *.ilk
+*.exe
 *.log
 *.user
-
