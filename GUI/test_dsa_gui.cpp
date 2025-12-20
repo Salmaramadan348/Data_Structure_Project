@@ -2,7 +2,8 @@
 #include "test.h"
 #include "XmlValidator.h"
 #include  "XmlParser.h"
-
+#include "Compressor.h"
+#include "Detect_UFT8.h"
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -32,6 +33,8 @@ WCHAR szWindowClass[MAX_LOADSTRING];
 
 HWND hEditor = NULL;
 HWND hTab = NULL;
+HWND hBtnCompress = NULL;      
+HWND hBtnDecompress = NULL;       
 int currentTab = 0;
 std::wstring lastFilePath = L"";
 std::wstring lastDirectory = L"";
@@ -43,7 +46,8 @@ enum {
     ID_BTN_VALIDATE = 2,
     ID_BTN_OPEN = 3,
     ID_BTN_SAVE = 4,
-
+    ID_BTN_COMPRESS = 5,
+    ID_BTN_DECOMPRESS = 6,
     ID_EDIT_MAIN = 100,
     ID_TAB_MAIN = 200
 };
@@ -182,8 +186,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             20, 100, 840, 500,
             hWnd, (HMENU)ID_EDIT_MAIN, hInst, NULL
         );
+        
+        hBtnCompress =CreateWindowW(L"BUTTON", L"Compress",
+            WS_CHILD ,
+            20, 60, 120, 30,
+            hWnd, (HMENU)ID_BTN_COMPRESS, hInst, NULL);
+
+       hBtnDecompress = CreateWindowW(L"BUTTON", L"Decompress",
+            WS_CHILD,
+            150, 60, 120, 30,
+            hWnd, (HMENU)ID_BTN_DECOMPRESS, hInst, NULL);
+        
+        break;
     }
-    break;
+
 
     // ---------------- Tab Change ----------------
     case WM_NOTIFY:
@@ -193,15 +209,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
             currentTab = TabCtrl_GetCurSel(hTab);
             BOOL show = (currentTab == 0);
+            BOOL showin_tab3 = (currentTab == 3);
 
             ShowWindow(hEditor, show ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hWnd, ID_BTN_FIX), show ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hWnd, ID_BTN_VALIDATE), show ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hWnd, ID_BTN_OPEN), show ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hWnd, ID_BTN_SAVE), show ? SW_SHOW : SW_HIDE);
-        }
+
+            ShowWindow(hBtnCompress, showin_tab3 ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnDecompress, showin_tab3 ? SW_SHOW : SW_HIDE);
+
+        }break;
     }
-    break;
+
 
     // ---------------- Buttons ----------------
     case WM_COMMAND:
@@ -235,10 +256,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                     // Load raw content directly to preserve original formatting and spacing
                     SetWindowTextW(hEditor, utf8ToWstring(buffer.str()).c_str());
                 }
-            }
+            }break;
         }
-        break;
 
+        
         case ID_BTN_FIX:
         {
             // 1. Get text from editor
@@ -270,7 +291,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             SetWindowTextW(hEditor, utf8ToWstring(noFormatResult).c_str());
         }
         break;
-
+        
         case ID_BTN_VALIDATE:
         {
             int len = GetWindowTextLengthW(hEditor);
@@ -293,7 +314,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             }
         }
         break;
-
+        
 
         case ID_BTN_SAVE:
         {
@@ -331,13 +352,107 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 MessageBoxW(hWnd, L"Saved Successfully!", L"Done", MB_OK);
             }
 
+        }break;
+
+        case ID_BTN_COMPRESS: {
+            if (lastFilePath.empty()) {
+                MessageBoxW(hWnd, L"No file opened from disk!", L"Error", MB_OK | MB_ICONERROR);
+                break;
+            }
+
+
+            OPENFILENAMEW ofn{};
+            wchar_t outPath[MAX_PATH] = L"compressed.pbx";
+
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = hWnd;
+            ofn.lpstrFilter = L"Compressed Files\0*.pbx\0All Files\0*.*\0";
+            ofn.lpstrFile = outPath;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST;
+
+            if (!GetSaveFileNameW(&ofn))
+                break; // user cancelled
+
+            //  Convert paths to UTF-8
+            std::string inputFile = wstringToUtf8(lastFilePath);
+            std::string outputFile = wstringToUtf8(outPath);
+
+            Compressor compressor;
+
+
+            if (compressor.compressPairByte(inputFile, outputFile)) {
+                MessageBoxW(hWnd, L"Compression successful!", L"Done", MB_OK);
+            }
+            else {
+                MessageBoxW(hWnd, L"Compression failed!", L"Error", MB_OK | MB_ICONERROR);
+            }
+            
+            
+            
+            break; }
+        
+        case ID_BTN_DECOMPRESS: {
+
+            // choose (.pbx) file
+            OPENFILENAMEW ofn{};
+            wchar_t inputFileName[MAX_PATH] = L"";
+
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = hWnd;
+            ofn.lpstrFilter = L"Compressed Files\0*.pbx\0All Files\0*.*\0";
+            ofn.lpstrFile = inputFileName;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
+
+            if (!GetOpenFileNameW(&ofn)) break; 
+
+            std::string inputFile = wstringToUtf8(inputFileName);
+
+           
+
+            OPENFILENAMEW saveOfn{};
+            wchar_t outputFileName[MAX_PATH] = L"decompressed_output.xml";
+
+            saveOfn.lStructSize = sizeof(saveOfn);
+            saveOfn.hwndOwner = hWnd;
+            saveOfn.lpstrFilter = L"XML Files\0*.xml\0All Files\0*.*\0";
+            saveOfn.lpstrFile = outputFileName;
+            saveOfn.nMaxFile = MAX_PATH;
+            saveOfn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+
+            if (!lastDirectory.empty())
+                saveOfn.lpstrInitialDir = lastDirectory.c_str();
+
+            if (!GetSaveFileNameW(&saveOfn)) {
+                // user cancelled
+                break;
+            }
+
+            std::string outputFile = wstringToUtf8(outputFileName);
+
+            Compressor compressor;
+
+            if (compressor.decompressPairByte(inputFile, outputFile)) {
+                MessageBoxW(hWnd, L"Decompression successful!", L"Done", MB_OK);
+            }
+            else {
+                MessageBoxW(hWnd, L"Decompression failed!", L"Error", MB_OK | MB_ICONERROR);
+            }
+
+            lastDirectory = std::wstring(outputFileName).substr(
+                0, std::wstring(outputFileName).find_last_of(L"\\/")
+            );
+
+            break;
+        
+
         }
-        break;
-
 
         }
-        break;
 
+        break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -346,5 +461,5 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
-    }
+
 }
