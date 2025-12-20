@@ -1,11 +1,48 @@
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files
 .vs/
-x64/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
 Debug/
 Release/
-*.ipch
-*.obj
-*.pdb
-*.ilk
-*.exe
+x64/
+x86/
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# NuGet packages
+*.nupkg
+packages/
+*.snupkg
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Visual Studio Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.db
+*.sqlite3
+
+# Logs
+
+# Others
+*.tmp
+*.bak
+*.swp
 *.log
-*.user
+*.sqlite
+# SQLite / temporary database files
+
