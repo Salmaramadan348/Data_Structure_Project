@@ -1,7 +1,9 @@
+#include "Xml_to_Json.h"
+#include "Tree.h"
+#include "TreeNode.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <stack>
 
 using namespace std;
@@ -16,44 +18,18 @@ string trim(const string& s) {
     return s.substr(start, end - start);
 }
 
-struct XMLNode {
-    string name;
-    string text;
-    vector<XMLNode*> children;
-
-    XMLNode(string n) : name(n), text("") {}
-
-    XMLNode* findChild(const string& childName) {
-        for (XMLNode* child : children) {
-            if (child->name == childName) {
-                return child;
-            }
-        }
-        return nullptr;
-    }
-
-    vector<XMLNode*> findAllChildren(const string& childName) {
-        vector<XMLNode*> result;
-        for (XMLNode* child : children) {
-            if (child->name == childName) {
-                result.push_back(child);
-            }
-        }
-        return result;
-    }
-};
-
-void deleteXMLTree(XMLNode* node) {
+void deleteXMLTree(TreeNode* node) {
     if (!node) return;
-    for (XMLNode* child : node->children) {
+    for (TreeNode* child : node->children) {
         deleteXMLTree(child);
     }
     delete node;
 }
 
-XMLNode* parseXML(const string& xml) {
-    stack<XMLNode*> st;
-    XMLNode* root = nullptr;
+Tree* parseXML(const string& xml) {
+    Tree* tree = new Tree();
+    stack<TreeNode*> st;
+    TreeNode* xmlRoot = nullptr;
     size_t i = 0;
 
     while (i < xml.size()) {
@@ -73,12 +49,12 @@ XMLNode* parseXML(const string& xml) {
                     i++;
                 }
 
-                XMLNode* node = new XMLNode(tag);
+                TreeNode* node = new TreeNode(tag);
 
                 if (!st.empty())
-                    st.top()->children.push_back(node);
+                    st.top()->addChild(node);
                 else
-                    root = node;
+                    xmlRoot = node;
 
                 st.push(node);
 
@@ -95,18 +71,22 @@ XMLNode* parseXML(const string& xml) {
             if (!st.empty()) {
                 string cleaned = trim(txt);
                 if (cleaned != "") {
-                    if (!st.top()->text.empty()) {
-                        st.top()->text += " " + cleaned;
+                    if (!st.top()->tagValue.empty()) {
+                        st.top()->tagValue += " " + cleaned;
                     }
                     else {
-                        st.top()->text = cleaned;
+                        st.top()->tagValue = cleaned;
                     }
                 }
             }
         }
     }
 
-    return root;
+    if (xmlRoot) {
+        tree->getRoot()->addChild(xmlRoot);
+    }
+
+    return tree;
 }
 
 string escapeJsonString(const string& s) {
@@ -148,19 +128,19 @@ string formatTextForJSON(const string& text, int indent, int wrap = 60) {
 }
 
 
-string nodeToJSON(XMLNode* node, int indent = 0) {
+string nodeToJSON(TreeNode* node, int indent = 0) {
     string indentStr(indent, ' ');
     string result = "";
 
     if (node->children.empty()) {
-        return formatTextForJSON(node->text, indent);
+        return formatTextForJSON(node->tagValue, indent);
     }
 
     bool isArrayContainer = false;
     if (!node->children.empty()) {
         string firstName = node->children[0]->name;
         isArrayContainer = true;
-        for (XMLNode* child : node->children) {
+        for (TreeNode* child : node->children) {
             if (child->name != firstName) {
                 isArrayContainer = false;
                 break;
@@ -174,21 +154,21 @@ string nodeToJSON(XMLNode* node, int indent = 0) {
         result += string(indent + 2, ' ') + "\"" + childName + "\": ";
 
         if (node->children.size() == 1) {
-            XMLNode* child = node->children[0];
+            TreeNode* child = node->children[0];
 
             if (child->children.empty()) {
-                result += formatTextForJSON(child->text, indent + 2);
+                result += formatTextForJSON(child->tagValue, indent + 2);
             }
             else {
                 result += "{\n";
                 bool firstField = true;
 
-                if (!child->text.empty()) {
-                    result += formatTextForJSON(child->text, indent + 4);
+                if (!child->tagValue.empty()) {
+                    result += formatTextForJSON(child->tagValue, indent + 4);
                     firstField = false;
                 }
 
-                for (XMLNode* grandchild : child->children) {
+                for (TreeNode* grandchild : child->children) {
                     if (!firstField) result += ",\n";
                     firstField = false;
 
@@ -205,21 +185,21 @@ string nodeToJSON(XMLNode* node, int indent = 0) {
             for (size_t i = 0; i < node->children.size(); i++) {
                 result += string(indent + 4, ' ');
 
-                XMLNode* child = node->children[i];
+                TreeNode* child = node->children[i];
 
                 if (child->children.empty()) {
-                    result += formatTextForJSON(child->text, indent + 4);
+                    result += formatTextForJSON(child->tagValue, indent + 4);
                 }
                 else {
                     result += "{\n";
                     bool firstField = true;
 
-                    if (!child->text.empty()) {
-                        result += formatTextForJSON(child->text, indent + 6);
+                    if (!child->tagValue.empty()) {
+                        result += formatTextForJSON(child->tagValue, indent + 6);
                         firstField = false;
                     }
 
-                    for (XMLNode* grandchild : child->children) {
+                    for (TreeNode* grandchild : child->children) {
                         if (!firstField) result += ",\n";
                         firstField = false;
 
@@ -243,12 +223,12 @@ string nodeToJSON(XMLNode* node, int indent = 0) {
 
         bool firstField = true;
 
-        if (!node->text.empty() && !node->children.empty()) {
-            result += formatTextForJSON(node->text, indent + 2);
+        if (!node->tagValue.empty() && !node->children.empty()) {
+            result += formatTextForJSON(node->tagValue, indent + 2);
             firstField = false;
         }
 
-        for (XMLNode* child : node->children) {
+        for (TreeNode* child : node->children) {
             if (!firstField) result += ",\n";
             firstField = false;
 
@@ -262,24 +242,34 @@ string nodeToJSON(XMLNode* node, int indent = 0) {
     return result;
 }
 
-string toJSON(XMLNode* root) {
-    if (!root) return "{}";
+string toJSON(Tree* tree) {
+    if (!tree || !tree->getRoot()) return "{}";
+
+    TreeNode* root = tree->getRoot();
+
+    if (root->children.empty()) return "{}";
+
+    TreeNode* xmlRoot = root->children[0];
 
     string result = "{\n";
-    result += "  \"" + root->name + "\": ";
-    result += nodeToJSON(root, 2);
+    result += "  \"" + xmlRoot->name + "\": ";
+    result += nodeToJSON(xmlRoot, 2);
     result += "\n}\n";
 
     return result;
 }
-string convertXMLtoJSON(const string& xmlText) {
-    XMLNode* root = parseXML(xmlText);
 
-    if (!root) {
+string convertXMLtoJSON(const string& xmlText) {
+    Tree* tree = parseXML(xmlText);
+
+    if (!tree) {
         return "";
     }
 
-    string json = toJSON(root);
-    deleteXMLTree(root);
+    string json = toJSON(tree);
+
+    deleteXMLTree(tree->getRoot());
+    delete tree;
+
     return json;
 }
