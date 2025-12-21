@@ -1,4 +1,4 @@
-﻿#include "compress.h" 
+﻿#include "Compress.h" 
 #include <map>
 #include <iostream>  
 

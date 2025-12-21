@@ -39,6 +39,15 @@
     <ClInclude Include="XmlParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Compress\Compress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Decompress\Decompress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlPrettify.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp">
@@ -54,6 +63,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XmlParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Compress\Compress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Decompress\Decompress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlPrettify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\DELL\Desktop\Data_Structure_Project\Decompress;C:\Users\DELL\Desktop\Data_Structure_Project\Compress;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,6 +130,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Compress\Compress.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\Decompress\Decompress.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -134,13 +143,19 @@
     <ClInclude Include="Tree.h" />
     <ClInclude Include="TreeNode.h" />
     <ClInclude Include="XmlParser.h" />
+    <ClInclude Include="XmlPrettify.h" />
     <ClInclude Include="XmlValidator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Compress\Compress.cpp" />
+    <ClCompile Include="..\Decompress\Decompress.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Tree.cpp" />
-    <ClCompile Include="TreeNode.cpp" />
+    <ClCompile Include="TreeNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="XmlParser.cpp" />
+    <ClCompile Include="XmlPrettify.cpp" />
     <ClCompile Include="XmlValidator.cpp" />
   </ItemGroup>
   <ItemGroup>
