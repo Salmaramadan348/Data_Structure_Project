@@ -7,8 +7,7 @@
 #include <stack>
 
 using namespace std;
-
-string trim(const string& s) {
+string trimm(const string& s) {
     size_t start = 0;
     while (start < s.size() && isspace((unsigned char)s[start])) start++;
 
@@ -69,7 +68,7 @@ Tree* parseXML(const string& xml) {
                 i++;
             }
             if (!st.empty()) {
-                string cleaned = trim(txt);
+                string cleaned = trimm(txt);
                 if (cleaned != "") {
                     if (!st.top()->tagValue.empty()) {
                         st.top()->tagValue += " " + cleaned;
@@ -103,27 +102,9 @@ string escapeJsonString(const string& s) {
     return result;
 }
 
-string formatTextForJSON(const string& text, int indent, int wrap = 60) {
+string formatTextForJSON(const string& text, int indent) {
     string indentStr(indent, ' ');
-    string extraIndent(indent + 8, ' ');
-
-    stringstream ss(text);
-    string word;
-    string result = indentStr + "\"";
-    size_t currentLength = 0;
-
-    while (ss >> word) {
-        if (currentLength + word.length() + 1 > static_cast<size_t>(wrap)) {
-            result += "\n" + extraIndent;
-            currentLength = 0;
-        }
-        result += word + " ";
-        currentLength += word.length() + 1;
-    }
-
-    result = trim(result);
-    result += "\"";
-
+    string result = indentStr + "\"" + escapeJsonString(text) + "\"";
     return result;
 }
 
