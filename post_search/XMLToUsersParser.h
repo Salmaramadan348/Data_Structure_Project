@@ -1,12 +1,8 @@
-#ifndef XML_TO_USERS_PARSER_H
-#define XML_TO_USERS_PARSER_H
-using namespace std;
-
+﻿#pragma once
 #include <vector>
 #include <string>
 #include "User.h"
+#include "XmlParser.h"
 
-// Convert the tags extracted by XMLValidator into user structures
-vector<User> parseUsersFromTags(const vector<string>& tags);
 
-#endif
+std::vector<User> parseUsersFromTags(const std::vector<std::string>& tags);

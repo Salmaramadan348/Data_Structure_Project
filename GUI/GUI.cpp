@@ -375,6 +375,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             if (!GetSaveFileNameW(&ofn))
                 break; // user cancelled
 
+            
+
+
             //  Convert paths to UTF-8
             std::string inputFile = wstringToUtf8(lastFilePath);
             std::string outputFile = wstringToUtf8(outPath);

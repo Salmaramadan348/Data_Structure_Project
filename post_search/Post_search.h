@@ -1,5 +1,4 @@
-
-#ifndef POST_SEARCH
+﻿#ifndef POST_SEARCH
 #define POST_SEARCH
 using namespace std;
 
@@ -9,8 +8,13 @@ using namespace std;
 #include <iostream>
 
 
+struct PostResult {
+    int userId;
+    Post post;
+};
 
-vector<Post> searchByWord(const vector<User>& users, string word);
-vector<Post> searchByTopic(const vector<User>& users, string search_topic);
+std::vector<PostResult> searchByTopicWithUser(const std::vector<User>& users, const std::string& key);
+std::vector<PostResult> searchByWordWithUser(const std::vector<User>& users, const std::string& key);
+
 
 #endif

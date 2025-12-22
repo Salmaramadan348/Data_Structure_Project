@@ -1,41 +1,33 @@
+﻿#include "Post_search.h"
+#include "XmlParser.h"
 
-#include "Post_search.h"
-
-using namespace std;
-
-
-
-vector<Post> searchByWord(const vector<User>& users,  string word)
-{
-    vector<Post> relevant_posts;
-    for (const User& u : users) {
-        for ( const Post& p : u.posts) {
-            if (p.body.find(word) != string::npos) {
-                relevant_posts.push_back(p);
-
+std::vector<PostResult> searchByTopicWithUser(const std::vector<User>& users, const std::string& key) {
+    std::vector<PostResult> results;
+    XmlParser parser;
+    for (const User& user : users) {
+        for (const Post& post : user.posts) {
+            for (const std::string& topic : post.topics) {
+                if (parser.trim(topic) == key) {
+                    results.push_back({ user.id, post });
+                    break;
+                }
             }
         }
     }
-    return relevant_posts;
+    return results;
 }
 
 
-
-vector<Post> searchByTopic(const vector<User>& users,  string search_topic)
-{
-    vector<Post> relevant_posts;
-    for (const User& u : users) {
-        for (const Post& p : u.posts) {
-            for (const string& topic : p.topics){
-            
-                if (topic == search_topic) {
-                    relevant_posts.push_back(p);
-                
-                }
-            
-
+std::vector<PostResult> searchByWordWithUser(const std::vector<User>& users, const std::string& word) {
+    std::vector<PostResult> results;
+    XmlParser parser;
+    for (const User& user : users) {
+        for (const Post& post : user.posts) {
+            std::string body = parser.trim(post.body);
+            if (body.find(word) != std::string::npos) {
+                results.push_back({ user.id, post });
             }
         }
     }
-    return relevant_posts;
+    return results;
 }

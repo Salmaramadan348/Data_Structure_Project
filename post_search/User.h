@@ -1,4 +1,5 @@
-﻿#ifndef USER_H
+
+#ifndef USER_H
 #define USER_H
 
 #include <string>
@@ -6,10 +7,10 @@
 using namespace std;
 
 
-class Post{
-   public:
-   string body;
-   vector<string> topics;
+class Post {
+public:
+    string body;
+    vector<string> topics;
 };
 
 class User {

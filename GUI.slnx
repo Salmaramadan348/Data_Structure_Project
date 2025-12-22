@@ -4,4 +4,5 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="GUI/GUI.vcxproj" Id="1101aaf1-f42e-4f5d-b0b5-9e03f1764a3c" />
+  <Project Path="XML_Editor/XML_Editor.vcxproj" Id="a10573cc-827a-47a1-8c33-8bce8b52d63d" />
 </Solution>
