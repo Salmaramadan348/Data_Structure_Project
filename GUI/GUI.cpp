@@ -215,10 +215,10 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
         TCITEM tie{};
         tie.mask = TCIF_TEXT;
-        tie.pszText = (LPWSTR)L"Analysis";   TabCtrl_InsertItem(hTabLevelTwo, 0, &tie);
+        
         tie.pszText = (LPWSTR)L"Search";     TabCtrl_InsertItem(hTabLevelTwo, 1, &tie);
         tie.pszText = (LPWSTR)L"Draw";       TabCtrl_InsertItem(hTabLevelTwo, 2, &tie);
-        tie.pszText = (LPWSTR)L"Level One";  TabCtrl_InsertItem(hTabLevelTwo, 3, &tie);
+        
 
 
         TabCtrl_SetCurSel(hTabLevelTwo, 1); // Set "Search" tab as active
@@ -339,7 +339,7 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 // Parse users
                 loadedUsers = parseUsersFromTags(tags);
 
-                MessageBoxW(hWnd, L"XML file loaded successfully!", L"Done", MB_OK);
+               
             }
         }
         break;
