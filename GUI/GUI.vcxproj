@@ -43,6 +43,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -127,20 +128,45 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+<<<<<<< Updated upstream
+=======
+    <ClInclude Include="Compress.h" />
+    <ClInclude Include="Decompress.h" />
+>>>>>>> Stashed changes
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Post_search.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="Tree.h" />
     <ClInclude Include="TreeNode.h" />
+    <ClInclude Include="User.h" />
     <ClInclude Include="XmlParser.h" />
+<<<<<<< Updated upstream
     <ClInclude Include="XmlValidator.h" />
   </ItemGroup>
   <ItemGroup>
+=======
+    <ClInclude Include="XmlPrettify.h" />
+    <ClInclude Include="XMLToUsersParser.h" />
+    <ClInclude Include="XmlValidator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Compress.cpp" />
+    <ClCompile Include="Decompress.cpp" />
+>>>>>>> Stashed changes
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="Post_search.cpp" />
     <ClCompile Include="Tree.cpp" />
     <ClCompile Include="TreeNode.cpp" />
+<<<<<<< Updated upstream
     <ClCompile Include="XmlParser.cpp" />
+=======
+    <ClCompile Include="User.cpp" />
+    <ClCompile Include="XmlParser.cpp" />
+    <ClCompile Include="XmlPrettify.cpp" />
+    <ClCompile Include="XMLToUsersParser.cpp" />
+>>>>>>> Stashed changes
     <ClCompile Include="XmlValidator.cpp" />
   </ItemGroup>
   <ItemGroup>
