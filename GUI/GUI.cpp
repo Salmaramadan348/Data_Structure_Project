@@ -683,42 +683,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         }
         break;
 
-        
 
 
-            case ID_BTN_COMPRESS: {
-                if (lastFilePath.empty()) {
-                    MessageBoxW(hWnd, L"No file opened from disk!", L"Error", MB_OK | MB_ICONERROR);
-                    break;
-                }
 
-
-                OPENFILENAMEW ofn{};
-                wchar_t outPath[MAX_PATH] = L"compressed.pbx";
-
-                ofn.lStructSize = sizeof(ofn);
-                ofn.hwndOwner = hWnd;
-                ofn.lpstrFilter = L"Compressed Files\0*.pbx\0All Files\0*.*\0";
-                ofn.lpstrFile = outPath;
-                ofn.nMaxFile = MAX_PATH;
-                ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST;
-
-                if (!GetSaveFileNameW(&ofn))
-                    break; // user cancelled
-
-                //  Convert paths to UTF-8
-                std::string inputFile = wstringToUtf8(lastFilePath);
-                std::string outputFile = wstringToUtf8(outPath);
-
-                SimpleXMLCompressor compressor;
-
-
-                compressor.compress(inputFile, outputFile);
-                MessageBoxW(hWnd, L"Compression successful!", L"Done", MB_OK);
-
-
+        case ID_BTN_COMPRESS: {
+            if (lastFilePath.empty()) {
+                MessageBoxW(hWnd, L"No file opened from disk!", L"Error", MB_OK | MB_ICONERROR);
+                break;
             }
-
 
             OPENFILENAMEW ofn{};
             wchar_t outPath[MAX_PATH] = L"compressed.pbx";
@@ -733,67 +705,63 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             if (!GetSaveFileNameW(&ofn))
                 break; // user cancelled
 
-            
-
-
-            //  Convert paths to UTF-8
+            // Convert paths to UTF-8
             std::string inputFile = wstringToUtf8(lastFilePath);
             std::string outputFile = wstringToUtf8(outPath);
 
             SimpleXMLCompressor compressor;
+            compressor.compress(inputFile, outputFile);
 
+            MessageBoxW(hWnd, L"Compression successful!", L"Done", MB_OK);
+        } break;
 
+        case ID_BTN_DECOMPRESS: {
+            // choose (.pbx) file
+            OPENFILENAMEW ofn{};
+            wchar_t inputFileName[MAX_PATH] = L"";
 
-            case ID_BTN_DECOMPRESS: {
+            ofn.lStructSize = sizeof(ofn);
+            ofn.hwndOwner = hWnd;
+            ofn.lpstrFilter = L"Compressed Files\0*.pbx\0All Files\0*.*\0";
+            ofn.lpstrFile = inputFileName;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
 
-                // choose (.pbx) file
-                OPENFILENAMEW ofn{};
-                wchar_t inputFileName[MAX_PATH] = L"";
+            if (!GetOpenFileNameW(&ofn))
+                break;
 
-                ofn.lStructSize = sizeof(ofn);
-                ofn.hwndOwner = hWnd;
-                ofn.lpstrFilter = L"Compressed Files\0*.pbx\0All Files\0*.*\0";
-                ofn.lpstrFile = inputFileName;
-                ofn.nMaxFile = MAX_PATH;
-                ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
+            std::string inputFile = wstringToUtf8(inputFileName);
 
-                if (!GetOpenFileNameW(&ofn)) break;
+            OPENFILENAMEW saveOfn{};
+            wchar_t outputFileName[MAX_PATH] = L"decompressed_output.xml";
 
-                std::string inputFile = wstringToUtf8(inputFileName);
+            saveOfn.lStructSize = sizeof(saveOfn);
+            saveOfn.hwndOwner = hWnd;
+            saveOfn.lpstrFilter = L"XML Files\0*.xml\0All Files\0*.*\0";
+            saveOfn.lpstrFile = outputFileName;
+            saveOfn.nMaxFile = MAX_PATH;
+            saveOfn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
 
+            if (!lastDirectory.empty())
+                saveOfn.lpstrInitialDir = lastDirectory.c_str();
 
-
-                OPENFILENAMEW saveOfn{};
-                wchar_t outputFileName[MAX_PATH] = L"decompressed_output.xml";
-
-                saveOfn.lStructSize = sizeof(saveOfn);
-                saveOfn.hwndOwner = hWnd;
-                saveOfn.lpstrFilter = L"XML Files\0*.xml\0All Files\0*.*\0";
-                saveOfn.lpstrFile = outputFileName;
-                saveOfn.nMaxFile = MAX_PATH;
-                saveOfn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
-
-                if (!lastDirectory.empty())
-                    saveOfn.lpstrInitialDir = lastDirectory.c_str();
-
-                if (!GetSaveFileNameW(&saveOfn)) {
-                    // user cancelled
-                    break;
-                }
-
-                std::string outputFile = wstringToUtf8(outputFileName);
-
-                SimpleXMLDecompressor decompressor;
-
-                decompressor.decompress(inputFile, outputFile);
-                MessageBoxW(hWnd, L"Decompression successful!", L"Done", MB_OK);
-
-                lastDirectory = std::wstring(outputFileName).substr(
-                    0, std::wstring(outputFileName).find_last_of(L"\\/")
-                );
-
+            if (!GetSaveFileNameW(&saveOfn)) {
+                break; // user cancelled
             }
-                                  break;
+
+            std::string outputFile = wstringToUtf8(outputFileName);
+
+            SimpleXMLDecompressor decompressor;
+            decompressor.decompress(inputFile, outputFile);
+
+            MessageBoxW(hWnd, L"Decompression successful!", L"Done", MB_OK);
+
+            lastDirectory = std::wstring(outputFileName).substr(
+                0, std::wstring(outputFileName).find_last_of(L"\\/")
+            );
+        } break;
+
+                                 
 
             }
 
