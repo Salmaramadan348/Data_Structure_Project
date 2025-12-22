@@ -1,4 +1,4 @@
-﻿#include "XMLToUsersParser.h"
+#include "XMLToUsersParser.h"
 #include "User.h"
 #include "XmlParser.h"
 
@@ -36,7 +36,7 @@ std::vector<User> parseUsersFromTags(const std::vector<std::string>& tags) {
     IdContext idContext = IdContext::None;
 
     for (const auto& token : tags) {
-        std::string value = parser.trim(token);
+        std::string value = XmlParser::trim(token);
 
         // ---------- TAG HANDLING ----------
         if (token == "<user>") {
