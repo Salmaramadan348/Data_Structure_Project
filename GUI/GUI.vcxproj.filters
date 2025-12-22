@@ -27,6 +27,8 @@
     <ClInclude Include="test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+
+
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp">
@@ -51,6 +53,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Tree Node\TreeNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Compress\Compress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Decompress\Decompress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlPrettify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
