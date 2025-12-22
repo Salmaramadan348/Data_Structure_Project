@@ -102,9 +102,27 @@ string escapeJsonString(const string& s) {
     return result;
 }
 
-string formatTextForJSON(const string& text, int indent) {
+string formatTextForJSON(const string& text, int indent, int wrap = 60) {
     string indentStr(indent, ' ');
-    string result = indentStr + "\"" + escapeJsonString(text) + "\"";
+    string extraIndent(indent + 8, ' ');
+
+    stringstream ss(text);
+    string word;
+    string result = indentStr + "\"";
+    size_t currentLength = 0;
+
+    while (ss >> word) {
+        if (currentLength + word.length() + 1 > static_cast<size_t>(wrap)) {
+            result += "\n" + extraIndent;
+            currentLength = 0;
+        }
+        result += word + " ";
+        currentLength += word.length() + 1;
+    }
+
+    result = trimm(result);
+    result += "\"";
+
     return result;
 }
 
