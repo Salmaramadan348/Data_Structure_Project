@@ -24,9 +24,6 @@
     <ClCompile Include="..\Decompress\Decompress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Minify\minify.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\XmlParser\XmlParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +34,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Tree Node\TreeNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Minify\minify.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\User\User.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\XmlToUsersParser\XMLToUsersParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\post_search\Post_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Xml to json\Xml_to_Json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

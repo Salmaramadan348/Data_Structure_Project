@@ -1,15 +1,17 @@
 // XML_Editor.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+
 
 #include "XmlValidator.h"
-#include  "XmlParser.h"
+#include "XmlParser.h"
 #include "Compress.h"
 #include "Decompress.h"
 #include "Tree.h"
 #include "TreeNode.h"
 #include "Minify.h"
-#include "post_search.h"
-#include "Xml_to_json.h"
+#include "Post_search.h"
+#include "Xml_to_Json.h"
+#include "User.h"
+#include "XMLToUsersParser.h"
 
 
 #include <sstream>
@@ -21,20 +23,20 @@
 using namespace std;
 
 int main(int argc, char** argv)
-{   
-    string mode, value, inputFile,outputFile;
-     
-    //xml_editor action -i input_file.xml -o output_file.xml
-    //argv[0]    argv[1]    argv[3]            argv[5]
-
-
-    if (argc < 4) { 
-        
-        cerr << "Usage: XML_Editor.exe action -i input_file [-o output_file]\n"; 
-        return 1; }
-
+{
+    string mode, inputFile, outputFile, keyword;
+    bool topicMode = false, wordMode = false;
     
 
+    if (argc < 3) {
+        cerr << "Usage: XML_Editor.exe action [-t topic/-w word] -i input_file [-o output_file]\n";
+        return 1;
+    }
+
+    
+    mode = argv[1];
+
+  
     for (int i = 2; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-i" && i + 1 < argc) {
@@ -43,6 +45,17 @@ int main(int argc, char** argv)
         else if (arg == "-o" && i + 1 < argc) {
             outputFile = argv[++i];
         }
+
+        else  if (arg == "-t" && i + 1 < argc) {
+                keyword = argv[++i];
+                topicMode = true;
+                
+            }
+        else if (arg == "-w" && i + 1 < argc) {
+                keyword = argv[++i];
+                wordMode = true;
+            }
+        
     }
 
     if (inputFile.empty()) {
@@ -50,22 +63,101 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    // Step 3: add IF blocks for each class
+
     if (mode == "compress") {
         SimpleXMLCompressor compressor;
-
-        if (outputFile.empty()) {
-            outputFile = inputFile + ".pbx";
-            cout << "No output file specified. Using default: " << outputFile << "\n";
-        }
-
+        if (outputFile.empty()) outputFile = inputFile + ".pbx";
         compressor.compress(inputFile, outputFile);
         cout << "Compression Successful.\n";
     }
 
+    else if (mode == "decompress") {
+        SimpleXMLDecompressor decompressor;
+        if (outputFile.empty()) outputFile = inputFile + ".xml";
+        decompressor.decompress(inputFile, outputFile);
+        cout << "Decompression Successful.\n";
+    }
+    else if (mode == "minify") {
+        ifstream in(inputFile);
+        string xml((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+        in.close();
 
-   // if (mode == "search"){}
-    //if (mode == "verify"){}
-    //if (mode == "decompress"){}
+        string result = minifyXML(xml);
+        if (outputFile.empty()) outputFile = inputFile + ".min.xml";
+        ofstream out(outputFile);
+        out << result;
+        out.close();
+
+        cout << "Minification Successful.\n";
+    }
+
+    else if (mode == "verify") {
+        ifstream in(inputFile);
+        string xml((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+        in.close();
+
+        XmlValidator validator;
+        vector<XmlError> errors = validator.checkXml(xml);
+
+        if (errors.empty()) {
+            cout << "XML is valid.\n";
+        }
+        else {
+            cout << "XML has errors:\n";
+            for (const auto& err : errors) {
+                cout << "Line " << err.lineNumber << ": " << err.message << "\n";
+            }
+        }
+    }
+    
+    else if (mode == "tojson") {
+        ifstream in(inputFile);
+        string xml((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+        in.close();
+        cout << "Starting JSON conversion...\n";
+
+        string json = convertXMLtoJSON(xml);
+        if (outputFile.empty()) outputFile = inputFile + ".json";
+        ofstream out(outputFile);
+        out << json;
+        out.close();
+
+        cout << "Conversion to JSON Successful.\n";
+    }
+    else if (mode == "search") {
+
+
+        string inputFile_1 = XmlParser::readFile(inputFile);
+        vector<string> tags = XmlParser::extractTags(inputFile_1);
+
+        vector<User> users = parseUsersFromTags(tags);
+
+        if (wordMode)
+        {
+            vector<PostResult> related_posts = searchByWordWithUser(users, keyword);
+            cout << related_posts.size() << " related posts  " << endl;
+
+
+            for (const PostResult& p : related_posts) {
+                cout << "Post of user " << p.userId << " for the word *" <<keyword <<"*" <<endl;
+                cout << p.post.body << endl;
+            }
+        }
+        else if (topicMode) {
+            vector<PostResult> related_posts_topic = searchByTopicWithUser(users, keyword);
+            cout << related_posts_topic.size() << " related topics " << endl;
+
+
+            for (const PostResult& p : related_posts_topic) {
+                cout << "Post of user " << p.userId << " for the topic *" << keyword << "*"<<endl;
+                cout << p.post.body << endl;
+            }
+        }
+    }
+    else {
+        cerr << " Unknown action: " << mode << "\n";
+    }
 
     return 0;
 }

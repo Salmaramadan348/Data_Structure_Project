@@ -1,4 +1,5 @@
 #include "XmlParser.h"
+using namespace std;
 
 std::vector<std::string> XmlParser::extractTags(const std::string& xml) {
     std::vector<std::string> tokens;
@@ -27,4 +28,10 @@ std::string XmlParser::trim(const std::string& str) {
     if (first == std::string::npos) return "";
     size_t last = str.find_last_not_of(" \t\n\r");
     return str.substr(first, (last - first + 1));
+}
+
+std ::string XmlParser:: readFile(const std::string& path) {
+    ifstream file(path);
+    if (!file) { cerr << "Cannot open file: " << path << endl; return ""; }
+    return string((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
 }

@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -108,7 +108,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Compress;$(SolutionDir)Decompress;$(SolutionDir)Minify;$(SolutionDir)post_search;$(SolutionDir)Xml to json;$(SolutionDir)XmlValidator;$(SolutionDir)XmlParser;$(SolutionDir)Tree;$(SolutionDir)Tree Node;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)XmlFormatter;$(SolutionDir)Compress;$(SolutionDir)Decompress;$(SolutionDir)Minify;$(SolutionDir)post_search;$(SolutionDir)Xml to json;$(SolutionDir)XmlValidator;$(SolutionDir)XmlParser;$(SolutionDir)Tree;$(SolutionDir)Tree Node;$(SolutionDir)User;$(SolutionDir)XmlToUsersParser</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,20 +141,20 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="test.h" />
-
-
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Compress\Compress.cpp" />
     <ClCompile Include="..\Decompress\Decompress.cpp" />
-
+    <ClCompile Include="..\post_search\Post_search.cpp" />
     <ClCompile Include="..\Tree Node\TreeNode.cpp" />
     <ClCompile Include="..\Tree\Tree.cpp" />
+    <ClCompile Include="..\User\User.cpp" />
     <ClCompile Include="..\Xml to json\Xml_to_Json.cpp" />
+    <ClCompile Include="..\XmlFormatter\XmlPrettify.cpp" />
     <ClCompile Include="..\XmlParser\XmlParser.cpp" />
+    <ClCompile Include="..\XmlToUsersParser\XMLToUsersParser.cpp" />
     <ClCompile Include="..\XmlValidator\XmlValidator.cpp" />
     <ClCompile Include="GUI.cpp" />
-
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GUI.rc" />

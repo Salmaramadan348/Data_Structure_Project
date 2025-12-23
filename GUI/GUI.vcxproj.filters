@@ -27,8 +27,12 @@
     <ClInclude Include="test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-
-
+    <ClInclude Include="..\Compress\Compress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Decompress\Decompress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp">
@@ -61,7 +65,16 @@
     <ClCompile Include="..\Decompress\Decompress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlPrettify.cpp">
+    <ClCompile Include="..\User\User.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\XmlToUsersParser\XMLToUsersParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\post_search\Post_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\XmlFormatter\XmlPrettify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

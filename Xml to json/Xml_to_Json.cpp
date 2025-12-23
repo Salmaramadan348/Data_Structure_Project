@@ -7,8 +7,7 @@
 #include <stack>
 
 using namespace std;
-
-string trim(const string& s) {
+string trimm(const string& s) {
     size_t start = 0;
     while (start < s.size() && isspace((unsigned char)s[start])) start++;
 
@@ -33,6 +32,8 @@ Tree* parseXML(const string& xml) {
     size_t i = 0;
 
     while (i < xml.size()) {
+
+        size_t old_i = i;
         if (xml[i] == '<') {
             if (i + 1 < xml.size() && xml[i + 1] == '/') {
                 while (i < xml.size() && xml[i] != '>') i++;
@@ -69,7 +70,7 @@ Tree* parseXML(const string& xml) {
                 i++;
             }
             if (!st.empty()) {
-                string cleaned = trim(txt);
+                string cleaned = trimm(txt);
                 if (cleaned != "") {
                     if (!st.top()->tagValue.empty()) {
                         st.top()->tagValue += " " + cleaned;
@@ -80,6 +81,8 @@ Tree* parseXML(const string& xml) {
                 }
             }
         }
+        if (i == old_i)
+            i++;
     }
 
     if (xmlRoot) {
@@ -121,7 +124,7 @@ string formatTextForJSON(const string& text, int indent, int wrap = 60) {
         currentLength += word.length() + 1;
     }
 
-    result = trim(result);
+    result = trimm(result);
     result += "\"";
 
     return result;
