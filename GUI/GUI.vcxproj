@@ -138,6 +138,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\Graph\Graph.h" />
+    <ClInclude Include="..\Minify\minify.h" />
+    <ClInclude Include="..\Tree Node\TreeNode.h" />
+    <ClInclude Include="..\Tree\Tree.h" />
+    <ClInclude Include="..\Xml to json\Xml_to_Json.h" />
     <ClInclude Include="..\XmlFormatter\XmlPrettify.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
@@ -148,6 +152,7 @@
     <ClCompile Include="..\Compress\Compress.cpp" />
     <ClCompile Include="..\Decompress\Decompress.cpp" />
     <ClCompile Include="..\Graph\Graph.cpp" />
+    <ClCompile Include="..\Minify\minify.cpp" />
     <ClCompile Include="..\post_search\Post_search.cpp" />
     <ClCompile Include="..\Tree Node\TreeNode.cpp" />
     <ClCompile Include="..\Tree\Tree.cpp" />

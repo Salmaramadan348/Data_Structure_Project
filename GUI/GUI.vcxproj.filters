@@ -39,6 +39,18 @@
     <ClInclude Include="..\XmlFormatter\XmlPrettify.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Xml to json\Xml_to_Json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tree\Tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tree Node\TreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Minify\minify.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp">
@@ -84,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Graph\Graph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Minify\minify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
