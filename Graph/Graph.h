@@ -25,7 +25,12 @@ public:
             return usersMap[id].name;
         return "";
     }
+
+    // Add these getters
+    const unordered_map<int, vector<int>>& getOutgoing() const { return outgoing; }
+    const unordered_map<int, vector<int>>& getIncoming() const { return incoming; }
 };
+
 
 
 #endif

@@ -8,6 +8,7 @@
 #include "Post_search.h"
 #include "User.h"
 #include "XMLToUsersParser.h"
+#include "Graph.h"  // Add Graph header
 
 #include <sstream>
 #include <fstream>
@@ -23,6 +24,7 @@
 XmlValidator validator;
 XmlParser parser;
 XMLTree smartFormatter;
+Graph graph;  // Global Graph object
 
 #define MAX_LOADSTRING 100
 
@@ -44,7 +46,10 @@ HWND hBtnCompress = NULL;
 HWND hBtnDecompress = NULL;
 HWND hBtnPrettify = NULL;
  
-HWND hOutputEditor = NULL;  // Right Editor (For Format Tab)
+HWND hOutputEditor = NULL;  
+HWND hEditUserID; 
+HWND hEditSuggest;  
+
 
 int currentTab = 0;
 std::wstring lastFilePath = L"";
@@ -76,8 +81,49 @@ enum {
     ID_BTN_GO_SEARCH = 305,
     ID_EDIT_RESULTS = 306,
     ID_TAB_SEARCH = 307,
-    ID_EDIT_FILEPATH =2001   
+    ID_EDIT_FILEPATH = 2001,
+    
+    // Analysis Tab IDs
+    ID_BTN_MOST_ACTIVE = 400,
+    ID_BTN_MOST_INFLUENCER = 401,
+    ID_BTN_MUTUAL = 402,
+    ID_BTN_SUGGEST = 403,
+    ID_EDIT_ANALYSIS_RESULTS = 404,
+ IDD_INPUT_DIALOG= 500,
+ IDC_EDIT_INPUT  = 501,
+ ID_EDIT_USERID= 3001,
+ ID_EDIT_SUGGEST= 3002,
+
+
 };
+INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    static wchar_t* buffer;
+
+    switch (msg)
+    {
+    case WM_INITDIALOG:
+        buffer = (wchar_t*)lParam;
+        SetDlgItemTextW(hDlg, IDC_EDIT_INPUT, L"");
+        return TRUE;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK)
+        {
+            GetDlgItemTextW(hDlg, IDC_EDIT_INPUT, buffer, 1024);
+            EndDialog(hDlg, IDOK);
+            return TRUE;
+        }
+        if (LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, IDCANCEL);
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}
+
 
 // ---------------- UTF helpers ----------------
 std::string wstringToUtf8(const std::wstring& wstr) {
@@ -198,6 +244,14 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     static HWND hBtnGo = NULL;
     static HWND hEditResults = NULL;
     static HWND hTabLevelTwo = NULL;
+    
+    // Analysis Tab Controls
+    static HWND hBtnMostActive = NULL;
+    static HWND hBtnMostInfluencer = NULL;
+    static HWND hBtnMutual = NULL;
+    static HWND hBtnSuggest = NULL;
+    static HWND hEditAnalysisResults = NULL;
+    static int currentLevelTwoTab = 1; // Default to Search tab
 
     switch (message) {
     case WM_CREATE:
@@ -215,89 +269,191 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
         TCITEM tie{};
         tie.mask = TCIF_TEXT;
-        
+        tie.pszText = (LPWSTR)L"Analysis";   TabCtrl_InsertItem(hTabLevelTwo, 0, &tie);
         tie.pszText = (LPWSTR)L"Search";     TabCtrl_InsertItem(hTabLevelTwo, 1, &tie);
         tie.pszText = (LPWSTR)L"Draw";       TabCtrl_InsertItem(hTabLevelTwo, 2, &tie);
         
-
-
         TabCtrl_SetCurSel(hTabLevelTwo, 1); // Set "Search" tab as active
 
-        // Select File Label
+        // ============ SEARCH TAB CONTROLS ============
         CreateWindowW(L"STATIC", L"Select File:",
-            WS_CHILD | WS_VISIBLE,
+            WS_CHILD,
             25, 80, 80, 20,
             hWnd, NULL, hInst, NULL);
 
-        // File Path Edit
-
-
-
         hEditFilePath = CreateWindowExW(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
-            WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_READONLY,
+            WS_CHILD | ES_AUTOHSCROLL | ES_READONLY,
             110, 78, 400, 25,
             hWnd, (HMENU)ID_EDIT_FILEPATH, hInst, NULL);
 
-
-        // Browse Button
         hBtnBrowse = CreateWindowW(L"BUTTON", L"Open XML File",
-            WS_CHILD | WS_VISIBLE,
+            WS_CHILD,
             25, 105, 120, 25,
             hWnd, (HMENU)ID_BTN_BROWSE_SEARCH, hInst, NULL);
 
-        // Search By Label
         CreateWindowW(L"STATIC", L"Search By:",
-            WS_CHILD | WS_VISIBLE,
+            WS_CHILD,
             25, 150, 80, 20,
             hWnd, NULL, hInst, NULL);
 
-        // Topic Radio Button
         hRadioTopic = CreateWindowW(L"BUTTON", L"Topic",
-            WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
+            WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
             240, 155, 80, 20,
             hWnd, (HMENU)ID_RADIO_TOPIC, hInst, NULL);
 
-        // Word Radio Button
         hRadioWord = CreateWindowW(L"BUTTON", L"Word",
-            WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+            WS_CHILD | BS_AUTORADIOBUTTON,
             240, 185, 80, 20,
             hWnd, (HMENU)ID_RADIO_WORD, hInst, NULL);
 
-        // Set Topic as default
         SendMessage(hRadioTopic, BM_SETCHECK, BST_CHECKED, 0);
 
-        // Key Label
         CreateWindowW(L"STATIC", L"Key",
-            WS_CHILD | WS_VISIBLE,
+            WS_CHILD,
             25, 225, 30, 20,
             hWnd, NULL, hInst, NULL);
 
-        // Search Key Edit
         hEditSearchKey = CreateWindowExW(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
-            WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+            WS_CHILD | ES_AUTOHSCROLL,
             60, 223, 570, 25,
             hWnd, (HMENU)ID_EDIT_SEARCH_KEY, hInst, NULL);
 
-        // Go Button
         hBtnGo = CreateWindowW(L"BUTTON", L"Go",
-            WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+            WS_CHILD | BS_DEFPUSHBUTTON,
             440, 165, 200, 40,
             hWnd, (HMENU)ID_BTN_GO_SEARCH, hInst, NULL);
 
-        // Results Edit (multiline, read-only)
         hEditResults = CreateWindowExW(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+            WS_CHILD | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
             650, 80, 610, 560,
             hWnd, (HMENU)ID_EDIT_RESULTS, hInst, NULL);
 
-        // Set font
+        // ============ ANALYSIS TAB CONTROLS ============
+        hBtnMostActive = CreateWindowW(L"BUTTON", L"Most Active",
+            WS_CHILD | BS_DEFPUSHBUTTON,
+            100, 120, 200, 60,
+            hWnd, (HMENU)ID_BTN_MOST_ACTIVE, hInst, NULL);
+
+        hBtnMostInfluencer = CreateWindowW(L"BUTTON", L"Most Influencer",
+            WS_CHILD | BS_DEFPUSHBUTTON,
+            100, 200, 200, 60,
+            hWnd, (HMENU)ID_BTN_MOST_INFLUENCER, hInst, NULL);
+
+       
+        hBtnMutual = CreateWindowW(
+            L"BUTTON",
+            L"Mutual Followers",
+            WS_CHILD | BS_DEFPUSHBUTTON,  
+            100, 280, 200, 40,
+            hWnd,
+            (HMENU)ID_BTN_MUTUAL,
+            hInst,
+            NULL
+        );
+
+        
+        hEditUserID = CreateWindowExW(
+            0, L"EDIT", L"",
+            WS_CHILD | WS_BORDER | ES_LEFT,  
+            320, 280, 50, 30,
+            hWnd,
+            (HMENU)ID_EDIT_USERID,
+            hInst,
+            NULL
+        );
+
+        
+
+
+        hBtnSuggest = CreateWindowW(
+            L"BUTTON",
+            L"Suggest Followers",
+            WS_CHILD | BS_DEFPUSHBUTTON, 
+            100, 360, 200, 40,
+            hWnd,
+            (HMENU)ID_BTN_SUGGEST,
+            hInst,
+            NULL
+        );
+
+        hEditSuggest = CreateWindowExW(
+            0, L"EDIT", L"",
+            WS_CHILD | WS_BORDER | ES_LEFT,  
+            320, 360, 50, 30,
+            hWnd,
+            (HMENU)ID_EDIT_SUGGEST,
+            hInst,
+            NULL
+        );
+
+
+
+
+
+        hEditAnalysisResults = CreateWindowExW(
+            WS_EX_CLIENTEDGE, L"EDIT", L"",
+            WS_CHILD | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+            400, 80, 820, 560,
+            hWnd, (HMENU)ID_EDIT_ANALYSIS_RESULTS, hInst, NULL);
+
+        // Set font for all controls
         HFONT hFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
             CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
+        
         SendMessage(hEditResults, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hEditAnalysisResults, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hBtnMostActive, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hBtnMostInfluencer, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hBtnMutual, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hBtnSuggest, WM_SETFONT, (WPARAM)hFont, TRUE);
+        
+        // Show Search tab controls by default
+        ShowWindow(hEditFilePath, SW_SHOW);
+        ShowWindow(hBtnBrowse, SW_SHOW);
+        ShowWindow(hRadioTopic, SW_SHOW);
+        ShowWindow(hRadioWord, SW_SHOW);
+        ShowWindow(hEditSearchKey, SW_SHOW);
+        ShowWindow(hBtnGo, SW_SHOW);
+        ShowWindow(hEditResults, SW_SHOW);
+
+    }
+    break;
+
+   
+    case WM_NOTIFY:
+    {
+        LPNMHDR hdr = (LPNMHDR)lParam;
+        if (hdr->idFrom == ID_TAB_SEARCH && hdr->code == TCN_SELCHANGE) {
+            currentLevelTwoTab = TabCtrl_GetCurSel(hTabLevelTwo);
+
+            BOOL isAnalysis = (currentLevelTwoTab == 0);
+            BOOL isSearch = (currentLevelTwoTab == 1);
+
+            // Show/Hide Search Tab Controls
+            ShowWindow(hEditFilePath, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnBrowse, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hRadioTopic, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hRadioWord, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hEditSearchKey, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnGo, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(hEditResults, isSearch ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, 0), isSearch ? SW_SHOW : SW_HIDE); // Static labels
+
+            // Show/Hide Analysis Tab Controls
+            ShowWindow(hBtnMostActive, isAnalysis ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnMostInfluencer, isAnalysis ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnMutual, isAnalysis ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnSuggest, isAnalysis ? SW_SHOW : SW_HIDE);
+            ShowWindow(hEditAnalysisResults, isAnalysis ? SW_SHOW : SW_HIDE);
+
+            // *** ADD THESE TWO LINES ***
+            ShowWindow(hEditUserID, isAnalysis ? SW_SHOW : SW_HIDE);
+            ShowWindow(hEditSuggest, isAnalysis ? SW_SHOW : SW_HIDE);
+        }
     }
     break;
 
@@ -318,11 +474,8 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
             if (GetOpenFileNameW(&ofn)) {
                 searchFilePath = fileName;
-
-                // عرض المسار في Edit
                 SetWindowTextW(hEditFilePath, fileName);
 
-                // Read the file
                 std::ifstream file(wstringToUtf8(fileName));
                 if (!file) {
                     MessageBoxW(hWnd, L"Failed to open file!", L"Error", MB_OK | MB_ICONERROR);
@@ -333,13 +486,13 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 buffer << file.rdbuf();
                 std::string xmlContent = buffer.str();
 
-                // Extract tags
                 std::vector<std::string> tags = parser.extractTags(xmlContent);
-
-                // Parse users
                 loadedUsers = parseUsersFromTags(tags);
 
-               
+                // Build graph for analysis
+                graph.buildGraph(loadedUsers);
+
+                SetWindowTextW(hEditAnalysisResults, L"File loaded successfully. Graph built.");
             }
         }
         break;
@@ -393,15 +546,144 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         }
         break;
 
+        case ID_BTN_MOST_ACTIVE:
+        {
+            if (loadedUsers.empty()) {
+                MessageBoxW(hWnd, L"Please load an XML file first!", L"Error", MB_OK | MB_ICONERROR);
+                break;
+            }
+
+            std::vector<int> active = graph.mostActive();
+            std::wstring result = L"Most Active Users:\r\n\r\n";
+
+            // Get outgoing map
+            const auto& outgoingMap = graph.getOutgoing();
+
+            for (int id : active) {
+                result += L"User ID: " + std::to_wstring(id) + L"\r\n";
+
+                // Safely check if id exists in map
+                auto it = outgoingMap.find(id);
+                size_t followingCount = (it != outgoingMap.end()) ? it->second.size() : 0;
+
+                result += L"Following Count: " + std::to_wstring(followingCount) + L"\r\n\r\n";
+            }
+
+            SetWindowTextW(hEditAnalysisResults, result.c_str());
+        }
+        break;
+
+        case ID_BTN_MOST_INFLUENCER:
+        {
+            if (loadedUsers.empty()) {
+                MessageBoxW(hWnd, L"Please load an XML file first!", L"Error", MB_OK | MB_ICONERROR);
+                break;
+            }
+
+            std::vector<int> influencers = graph.mostInfluencer();
+            std::wstring result = L"Most Influential Users:\r\n\r\n";
+
+            // Get incoming map
+            const auto& incomingMap = graph.getIncoming();
+
+            for (int id : influencers) {
+                result += L"User ID: " + std::to_wstring(id) + L"\r\n";
+
+                auto it = incomingMap.find(id);
+                size_t followersCount = (it != incomingMap.end()) ? it->second.size() : 0;
+
+                result += L"Followers Count: " + std::to_wstring(followersCount) + L"\r\n\r\n";
+            }
+
+            SetWindowTextW(hEditAnalysisResults, result.c_str());
+        }
+        break;
+
+
+        case ID_BTN_MUTUAL:
+        {
+            wchar_t input[1024];
+            GetWindowTextW(hEditUserID, input, 1024); // قراءة النص من Edit Control
+
+            std::wstring idsStr = input;
+            std::vector<int> ids;
+            size_t start = 0;
+            size_t pos = idsStr.find(L',');
+
+            while (pos != std::wstring::npos) {
+                std::wstring part = idsStr.substr(start, pos - start);
+                part.erase(0, part.find_first_not_of(L" \t"));
+                part.erase(part.find_last_not_of(L" \t") + 1);
+
+                if (!part.empty()) {
+                    int id = _wtoi(part.c_str());
+                    if (id > 0) ids.push_back(id);
+                }
+
+                start = pos + 1;
+                pos = idsStr.find(L',', start);
+            }
+
+            std::wstring part = idsStr.substr(start);
+            part.erase(0, part.find_first_not_of(L" \t"));
+            part.erase(part.find_last_not_of(L" \t") + 1);
+            if (!part.empty()) {
+                int id = _wtoi(part.c_str());
+                if (id > 0) ids.push_back(id);
+            }
+
+            if (ids.empty()) {
+                MessageBoxW(hWnd, L"Invalid User IDs", L"Error", MB_OK | MB_ICONERROR);
+                break;
+            }
+
+            auto mutual = graph.mutualFollowers(ids);
+
+            std::wstring result = L"Mutual Followers:\r\n";
+            for (int id : mutual)
+                result += L"User ID: " + std::to_wstring(id) + L"\r\n";
+
+            SetWindowTextW(hEditAnalysisResults, result.c_str());
+        }
+        break;
+
+
+
+
+
+        case ID_BTN_SUGGEST:
+        {
+            wchar_t input[1024] = L"";
+            GetWindowTextW(hEditSuggest, input, 1024);  
+
+            std::wstring s = input;
+            s.erase(0, s.find_first_not_of(L" \t\r\n"));
+            s.erase(s.find_last_not_of(L" \t\r\n") + 1);
+
+            int userId = _wtoi(s.c_str());
+
+            if (userId <= 0) {
+                MessageBoxW(hWnd, L"Invalid User ID", L"Error", MB_OK | MB_ICONERROR);
+                break;
+            }
+
+            auto suggestions = graph.suggest(userId);
+
+            std::wstring result = L"Suggestions:\r\n";
+            for (int id : suggestions)
+                result += L"User ID: " + std::to_wstring(id) + L"\r\n";
+
+            SetWindowTextW(hEditAnalysisResults, result.c_str());
+        }
+        break;
+
+
+        
         }
     }
     break;
 
-
-   
-
     case WM_DESTROY:
-        // Don't call PostQuitMessage here, as this is a secondary window
         break;
 
     default:
