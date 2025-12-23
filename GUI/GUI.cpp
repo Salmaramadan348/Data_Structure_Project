@@ -470,12 +470,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         hBtnPrettify = CreateWindowW(L"BUTTON", L"Prettify", WS_CHILD, 20, 60, 150, 30, hWnd, (HMENU)ID_BTN_PRETTIFY, hInst, NULL);
         // ---- Output Editor for Prettify ----
-        hOutputEditor = CreateWindowEx(
-            WS_EX_CLIENTEDGE, L"EDIT", L"",
-            WS_CHILD | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-            445, 100, 415, 500,   
-            hWnd, NULL, hInst, NULL
-        );
+        hOutputEditor = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"",WS_CHILD | WS_VISIBLE |ES_MULTILINE |      
+            ES_AUTOVSCROLL |WS_VSCROLL | WS_HSCROLL | ES_READONLY, 445, 100, 415, 500,hWnd, NULL, hInst, NULL);
+
         ShowWindow(hOutputEditor, SW_HIDE); 
 
 
@@ -504,20 +501,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             BOOL isVerify = (currentTab == 0);
             BOOL isLevelTwo = (currentTab == 4);
             BOOL isFormat = (currentTab == 1);
-                            BOOL isCompress = (currentTab == 3);
+            BOOL isCompress = (currentTab == 3);
             
-                            // Side-by-Side Logic: Resize hEditor if in Format mode
-                            SetWindowPos(hEditor, NULL, 20, 100, isFormat ? 415 : 840, 500, SWP_NOZORDER);
-                            ShowWindow(hOutputEditor, isFormat ? SW_SHOW : SW_HIDE);
+            // Side-by-Side Logic: Resize hEditor if in Format mode
+            SetWindowPos(hEditor, NULL, 20, 100, isFormat ? 415 : 840, 500, SWP_NOZORDER);
+            ShowWindow(hOutputEditor, isFormat ? SW_SHOW : SW_HIDE);
             
-                            ShowWindow(hEditor, (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-                            ShowWindow(GetDlgItem(hWnd, ID_BTN_FIX), isVerify ? SW_SHOW : SW_HIDE);
-                            ShowWindow(GetDlgItem(hWnd, ID_BTN_VALIDATE), isVerify ? SW_SHOW : SW_HIDE);
-                            ShowWindow(hBtnPrettify, isFormat ? SW_SHOW : SW_HIDE);
-                            ShowWindow(GetDlgItem(hWnd, ID_BTN_OPEN), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-                            ShowWindow(GetDlgItem(hWnd, ID_BTN_SAVE), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-                            ShowWindow(hBtnCompress, isCompress ? SW_SHOW : SW_HIDE);
-                            ShowWindow(hBtnDecompress, isCompress ? SW_SHOW : SW_HIDE);
+            ShowWindow(hEditor, (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, ID_BTN_FIX), isVerify ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, ID_BTN_VALIDATE), isVerify ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnPrettify, isFormat ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, ID_BTN_OPEN), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, ID_BTN_SAVE), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnCompress, isCompress ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnDecompress, isCompress ? SW_SHOW : SW_HIDE);
 
            
 
@@ -636,7 +633,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 }
             }
 
-            std::string result = smartFormatter.getFormattedXML(root, 80);
+            std::string result = smartFormatter.getFormattedXML(root, 15);
             if (!result.empty())
                 SetWindowTextW(hOutputEditor, utf8ToWstring(result).c_str());
             else
