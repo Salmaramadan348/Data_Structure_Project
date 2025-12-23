@@ -73,23 +73,24 @@ int main(int argc, char** argv)
         compressor.compress(inputFile, outputFile);
         cout << "Compression Successful.\n";
     }
-    else if (mode == "formatt") {
+    else if (mode == "format") {
         string xmlText = XmlParser::readFile(inputFile);
         if (xmlText.empty()) {
             cerr << "Failed to read input file.\n";
             return 1;
         }
+
         XmlValidator validator;
         XmlParser parser;
         XMLTree formatter;
 
-        std::vector<std::string> tokens = parser.extractTags(xmlText);
+        vector<string> tokens = parser.extractTags(xmlText);
         Tree tree;
         TreeNode* root = tree.getRoot();
         TreeNode* current = root;
 
-        for (const std::string& token : tokens) {
-            std::string t = parser.trim(token);
+        for (const string& token : tokens) {
+            string t = parser.trim(token);
             if (t.empty()) continue;
             if (validator.isOpeningTag(t)) {
                 TreeNode* newNode = new TreeNode(validator.getTagName(t));
@@ -101,22 +102,28 @@ int main(int argc, char** argv)
             }
             else {
                 if (current != root) current->tagValue = t;
-
             }
         }
 
         string formattedXML = formatter.getFormattedXML(root, 15);
 
-        if (!outputFile.empty()) {
-            ofstream out(outputFile);
-            out << formattedXML;
-            out.close();
-            cout << "Formatting Successful. Output saved to: " << outputFile << endl;
+       
+        if (outputFile.empty()) {
+           
+            outputFile = inputFile.substr(0, inputFile.find_last_of('.')) + "_formatted.xml";
         }
-        else {
-            cout << formattedXML << endl;
+
+        ofstream out(outputFile);
+        if (!out) {
+            cerr << "Failed to open output file.\n";
+            return 1;
         }
+        out << formattedXML;
+        out.close();
+
+        cout << "Formatting successful. Saved to: " << outputFile << endl;
     }
+
 
 
     else if (mode == "decompress") {
