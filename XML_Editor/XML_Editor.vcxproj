@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Compress;$(SolutionDir)Decompress;$(SolutionDir)Minify;$(SolutionDir)post_search;$(SolutionDir)Xml to json;$(SolutionDir)XmlValidator;$(SolutionDir)XmlParser;$(SolutionDir)Tree;$(SolutionDir)Tree Node;$(SolutionDir)User;$(SolutionDir)XmlToUsersParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)XmlFormatter;$(SolutionDir)Compress;$(SolutionDir)Decompress;$(SolutionDir)Minify;$(SolutionDir)post_search;$(SolutionDir)Xml to json;$(SolutionDir)XmlValidator;$(SolutionDir)XmlParser;$(SolutionDir)Tree;$(SolutionDir)Tree Node;$(SolutionDir)User;$(SolutionDir)XmlToUsersParser;$(SolutionDir)Graph;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,12 +126,14 @@
   <ItemGroup>
     <ClCompile Include="..\Compress\Compress.cpp" />
     <ClCompile Include="..\Decompress\Decompress.cpp" />
+    <ClCompile Include="..\Graph\Graph.cpp" />
     <ClCompile Include="..\Minify\minify.cpp" />
     <ClCompile Include="..\post_search\Post_search.cpp" />
     <ClCompile Include="..\Tree Node\TreeNode.cpp" />
     <ClCompile Include="..\Tree\Tree.cpp" />
     <ClCompile Include="..\User\User.cpp" />
     <ClCompile Include="..\Xml to json\Xml_to_Json.cpp" />
+    <ClCompile Include="..\XmlFormatter\XmlPrettify.cpp" />
     <ClCompile Include="..\XmlParser\XmlParser.cpp" />
     <ClCompile Include="..\XmlToUsersParser\XMLToUsersParser.cpp" />
     <ClCompile Include="..\XmlValidator\XmlValidator.cpp" />

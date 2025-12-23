@@ -12,6 +12,7 @@
 #include "Xml_to_Json.h"
 #include "User.h"
 #include "XMLToUsersParser.h"
+#include "Graph.h"
 
 
 #include <sstream>
@@ -125,6 +126,7 @@ int main(int argc, char** argv)
 
         cout << "Conversion to JSON Successful.\n";
     }
+
     else if (mode == "search") {
 
 
@@ -156,7 +158,65 @@ int main(int argc, char** argv)
         }
     }
     else {
-        cerr << " Unknown action: " << mode << "\n";
+        string xmlText = XmlParser::readFile(inputFile);
+        if (xmlText.empty()) return 1;
+
+        vector<string> tags = XmlParser::extractTags(xmlText);
+        vector<User> users = parseUsersFromTags(tags);
+
+        Graph g;
+        g.buildGraph(users);
+
+        if (mode == "most_active") {
+            auto res = g.mostActive();
+            cout << "Most Active Users: ";
+            for (int id : res) cout << id << " ";
+            cout << endl;
+        }
+
+        else if (mode == "most_influencer") {
+            auto res = g.mostInfluencer();
+            cout << "Most Influencer Users: ";
+            for (int id : res) cout << id << " ";
+            cout << endl;
+        }
+
+        else if (mode == "mutual") {
+            vector<int> ids;
+            for (int i = 2; i < argc; i++) {
+                string arg = argv[i];
+                if (arg == "-ids" && i + 1 < argc) {
+                    stringstream ss(argv[++i]);
+                    string temp;
+                    while (getline(ss, temp, ',')) {
+                        ids.push_back(stoi(temp));
+                    }
+                }
+            }
+
+            auto res = g.mutualFollowers(ids);
+            cout << "Mutual Followers: ";
+            for (int id : res) cout << id << " ";
+            cout << endl;
+        }
+
+        else if (mode == "suggest") {
+            int userId = -1;
+            for (int i = 2; i < argc; i++) {
+                if (string(argv[i]) == "-id" && i + 1 < argc) {
+                    userId = stoi(argv[++i]);
+                }
+            }
+
+            auto res = g.suggest(userId);
+            cout << "Suggested Users: ";
+            for (int id : res) cout << id << " ";
+            cout << endl;
+        }
+
+        else {
+            cerr << "Unknown action: " << mode << endl;
+        }
     }
 
     return 0;

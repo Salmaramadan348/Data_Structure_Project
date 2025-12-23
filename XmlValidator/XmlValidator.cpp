@@ -2,6 +2,8 @@
 #include "XmlParser.h"
 #include <stack>
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -19,12 +21,8 @@ std::string XmlValidator::getTagName(const std::string& tag) {
     return "";
 }
 
-#include "XmlValidator.h"
-#include "XmlParser.h"
-#include <stack>
-#include <iostream>
-#include <string>
-#include <vector>
+
+
 
 using namespace std;
 
