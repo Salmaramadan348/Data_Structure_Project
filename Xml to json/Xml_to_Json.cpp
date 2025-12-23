@@ -32,6 +32,8 @@ Tree* parseXML(const string& xml) {
     size_t i = 0;
 
     while (i < xml.size()) {
+
+        size_t old_i = i;
         if (xml[i] == '<') {
             if (i + 1 < xml.size() && xml[i + 1] == '/') {
                 while (i < xml.size() && xml[i] != '>') i++;
@@ -79,6 +81,8 @@ Tree* parseXML(const string& xml) {
                 }
             }
         }
+        if (i == old_i)
+            i++;
     }
 
     if (xmlRoot) {
