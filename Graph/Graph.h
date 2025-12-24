@@ -1,4 +1,4 @@
-﻿#ifndef GRAPH_H
+#ifndef GRAPH_H
 #define GRAPH_H
 
 #include <unordered_map>
