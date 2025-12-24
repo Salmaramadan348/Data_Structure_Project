@@ -3,6 +3,7 @@
 
 #include "XmlValidator.h"
 #include "XmlParser.h"
+#include "XmlPrettify.h"
 #include "Compress.h"
 #include "Decompress.h"
 #include "Tree.h"
@@ -72,6 +73,51 @@ int main(int argc, char** argv)
         compressor.compress(inputFile, outputFile);
         cout << "Compression Successful.\n";
     }
+    else if (mode == "formatt") {
+        string xmlText = XmlParser::readFile(inputFile);
+        if (xmlText.empty()) {
+            cerr << "Failed to read input file.\n";
+            return 1;
+        }
+            XmlValidator validator;
+            XmlParser parser;
+            XMLTree formatter;
+
+            std::vector<std::string> tokens = parser.extractTags(xmlText);
+            Tree tree;
+            TreeNode* root = tree.getRoot();
+            TreeNode* current = root;
+
+            for (const std::string& token : tokens) {
+                std::string t = parser.trim(token);
+                if (t.empty()) continue;
+                if (validator.isOpeningTag(t)) {
+                    TreeNode* newNode = new TreeNode(validator.getTagName(t));
+                    current->addChild(newNode);
+                    current = newNode;
+                }
+                else if (validator.isClosingTag(t)) {
+                    if (current && current->parent) current = current->parent;
+                }
+                else {
+                    if (current != root) current->tagValue = t;
+                
+            }
+            }
+
+        string formattedXML = formatter.getFormattedXML(root, 15);
+
+        if (!outputFile.empty()) {
+            ofstream out(outputFile);
+            out << formattedXML;
+            out.close();
+            cout << "Formatting Successful. Output saved to: " << outputFile << endl;
+        }
+        else {
+            cout << formattedXML << endl;
+        }
+    }
+
 
     else if (mode == "format") {
         string xmlText = XmlParser::readFile(inputFile);
