@@ -65,7 +65,7 @@ GUI Features
 
 Links
 =======
-video https://drive.google.com/drive/folders/1iIhFIquvUkvYqm_bAcdAscWemozuEABy?usp=sharing 
+video https://drive.google.com/file/d/12m9jHX5fMgNlRnRFi7Et_qo_AsQPVByD/view?usp=drivesdk
 
 Summary
 =======
