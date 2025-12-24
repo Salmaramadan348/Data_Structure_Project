@@ -22,8 +22,6 @@ void Graph::buildGraph(const vector<User>& users) {
             incoming[f].push_back(u.id);
         }
     }
-
-
     for (const auto& u : users) {
         incoming[u.id];
         outgoing[u.id];
@@ -90,36 +88,30 @@ vector<int> Graph::mutualFollowers(const vector<int>& ids) {
     return res;
 }
 
-
 vector<int> Graph::suggest(int id) {
     vector<int> suggestions;
-
-    // Step 1: Get followers of the current user
-    const vector<int>& myFollowers = incoming[id];  // incoming = followers
-    if (myFollowers.empty()) return {};
-
-    // Step 2: Build set of excluded users (self + already following)
-    unordered_set<int> excludedUsers(outgoing[id].begin(), outgoing[id].end());
-    excludedUsers.insert(id);  // exclude self
-
-    // Step 3: Suggestions set to avoid duplicates
+    unordered_set<int> myFollowingSet;
     unordered_set<int> suggestionsSet;
 
-    // Step 4: Iterate followers
-    for (int followerId : myFollowers) {
-        const vector<int>& followersOfFollower = incoming[followerId]; // followers of my follower
-        for (int candidateId : followersOfFollower) {
-            if (excludedUsers.find(candidateId) == excludedUsers.end() &&
-                suggestionsSet.find(candidateId) == suggestionsSet.end()) {
-                suggestions.push_back(candidateId);
-                suggestionsSet.insert(candidateId);
+
+    for (int followingId : outgoing[id]) {
+        myFollowingSet.insert(followingId);
+    }
+
+    myFollowingSet.insert(id);
+
+    for (int friendId : outgoing[id]) {
+        for (int friendOfFriendId : outgoing[friendId]) {
+            if (friendOfFriendId != id &&
+                myFollowingSet.find(friendOfFriendId) == myFollowingSet.end()) {
+
+                if (suggestionsSet.find(friendOfFriendId) == suggestionsSet.end()) {
+                    suggestions.push_back(friendOfFriendId);
+                    suggestionsSet.insert(friendOfFriendId);
+                }
             }
         }
     }
 
     return suggestions;
 }
-
-
-
-
