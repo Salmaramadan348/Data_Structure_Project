@@ -3,7 +3,6 @@
 
 #include "XmlValidator.h"
 #include "XmlParser.h"
-#include "XmlPrettify.h"
 #include "Compress.h"
 #include "Decompress.h"
 #include "Tree.h"
@@ -28,17 +27,17 @@ int main(int argc, char** argv)
 {
     string mode, inputFile, outputFile, keyword;
     bool topicMode = false, wordMode = false;
-
+    
 
     if (argc < 3) {
         cerr << "Usage: XML_Editor.exe action [-t topic/-w word] -i input_file [-o output_file]\n";
         return 1;
     }
 
-
+    
     mode = argv[1];
 
-
+  
     for (int i = 2; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-i" && i + 1 < argc) {
@@ -49,15 +48,15 @@ int main(int argc, char** argv)
         }
 
         else  if (arg == "-t" && i + 1 < argc) {
-            keyword = argv[++i];
-            topicMode = true;
-
-        }
+                keyword = argv[++i];
+                topicMode = true;
+                
+            }
         else if (arg == "-w" && i + 1 < argc) {
-            keyword = argv[++i];
-            wordMode = true;
-        }
-
+                keyword = argv[++i];
+                wordMode = true;
+            }
+        
     }
 
     if (inputFile.empty()) {
@@ -73,6 +72,7 @@ int main(int argc, char** argv)
         compressor.compress(inputFile, outputFile);
         cout << "Compression Successful.\n";
     }
+
     else if (mode == "format") {
         string xmlText = XmlParser::readFile(inputFile);
         if (xmlText.empty()) {
@@ -126,6 +126,7 @@ int main(int argc, char** argv)
 
 
 
+
     else if (mode == "decompress") {
         SimpleXMLDecompressor decompressor;
         if (outputFile.empty()) outputFile = inputFile + ".xml";
@@ -164,7 +165,7 @@ int main(int argc, char** argv)
             }
         }
     }
-
+    
     else if (mode == "tojson") {
         ifstream in(inputFile);
         string xml((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
@@ -195,7 +196,7 @@ int main(int argc, char** argv)
 
 
             for (const PostResult& p : related_posts) {
-                cout << "Post of user " << p.userId << " for the word *" << keyword << "*" << endl;
+                cout << "Post of user " << p.userId << " for the word *" <<keyword <<"*" <<endl;
                 cout << p.post.body << endl;
             }
         }
@@ -205,7 +206,7 @@ int main(int argc, char** argv)
 
 
             for (const PostResult& p : related_posts_topic) {
-                cout << "Post of user " << p.userId << " for the topic *" << keyword << "*" << endl;
+                cout << "Post of user " << p.userId << " for the topic *" << keyword << "*"<<endl;
                 cout << p.post.body << endl;
             }
         }
