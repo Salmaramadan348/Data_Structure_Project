@@ -1,5 +1,4 @@
 CSE331: Data Structures and Algorithms – XML Editor Project
-
 ====================
 Functionalities
 ====================
