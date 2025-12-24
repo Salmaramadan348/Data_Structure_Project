@@ -35,8 +35,6 @@ Advanced Features:
 3) Post Search
    - Search posts by word or topic.
 
-
-====================
 Command-Line Operations
 ====================
 
@@ -53,8 +51,6 @@ Command-Line Operations
 | Post Search by Word        | XML_Editor search -w word -i sample.xml             | Search posts containing a specific word.                            |
 | Post Search by Topic       | XML_Editor search -t topic -i sample.xml            | Search posts related to a specific topic.                           |
 
-
-====================
 GUI Features
 ====================
 🗂️ File Input:
