@@ -1,16 +1,14 @@
 ﻿#include "framework.h"
 #include "test.h"
 
-// 1️⃣ Windows headers FIRST
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
 
-// 2️⃣ نشيل macros مشهورة بتعمل مشاكل
 #undef min
 #undef max
 
-// 3️⃣ GDI+ بعد Windows
+
 #include <objidl.h>
 #include <gdiplus.h>
 
@@ -19,7 +17,6 @@
 
 using namespace Gdiplus;
 
-// 4️⃣ Project headers LAST
 #include "XmlValidator.h"
 #include "XmlParser.h"
 #include "Xml_to_Json.h"
@@ -901,7 +898,6 @@ LRESULT CALLBACK LevelTwoWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
     switch (message) {
-
     case WM_CREATE:
     {
         INITCOMMONCONTROLSEX icex{ sizeof(icex), ICC_TAB_CLASSES };
@@ -917,68 +913,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         TCITEM tie{};
         tie.mask = TCIF_TEXT;
-
         tie.pszText = (LPWSTR)L"Verify";   TabCtrl_InsertItem(hTab, 0, &tie);
         tie.pszText = (LPWSTR)L"Format";   TabCtrl_InsertItem(hTab, 1, &tie);
         tie.pszText = (LPWSTR)L"JSON";     TabCtrl_InsertItem(hTab, 2, &tie);
         tie.pszText = (LPWSTR)L"Compress"; TabCtrl_InsertItem(hTab, 3, &tie);
-
         tie.pszText = (LPWSTR)L"Level Two"; TabCtrl_InsertItem(hTab, 4, &tie);
 
         // ---- Buttons ----
-        CreateWindowW(L"BUTTON", L"Fix XML",
-            WS_CHILD | WS_VISIBLE,
-            20, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_FIX, hInst, NULL);
-
-        CreateWindowW(L"BUTTON", L"Validate XML",
-            WS_CHILD | WS_VISIBLE,
-            150, 60, 150, 30,
-            hWnd, (HMENU)ID_BTN_VALIDATE, hInst, NULL);
-
-        CreateWindowW(L"BUTTON", L"Open XML",
-            WS_CHILD | WS_VISIBLE,
-            320, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_OPEN, hInst, NULL);
-
-        CreateWindowW(L"BUTTON", L"Save XML",
-            WS_CHILD | WS_VISIBLE,
-            460, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_SAVE, hInst, NULL);
-
-        // ---- Editor ----
-        hEditor = CreateWindowEx(
-            WS_EX_CLIENTEDGE, L"EDIT", L"",
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-            ES_MULTILINE | ES_AUTOVSCROLL,
-            20, 100, 840, 500,
-            hWnd, (HMENU)ID_EDIT_MAIN, hInst, NULL
-        );
-
+        CreateWindowW(L"BUTTON", L"Fix XML", WS_CHILD | WS_VISIBLE, 20, 60, 120, 30, hWnd, (HMENU)ID_BTN_FIX, hInst, NULL);
+        CreateWindowW(L"BUTTON", L"Validate XML", WS_CHILD | WS_VISIBLE, 150, 60, 150, 30, hWnd, (HMENU)ID_BTN_VALIDATE, hInst, NULL);
+        CreateWindowW(L"BUTTON", L"Open XML", WS_CHILD | WS_VISIBLE, 320, 60, 120, 30, hWnd, (HMENU)ID_BTN_OPEN, hInst, NULL);
+        CreateWindowW(L"BUTTON", L"Save XML", WS_CHILD | WS_VISIBLE, 460, 60, 120, 30, hWnd, (HMENU)ID_BTN_SAVE, hInst, NULL);
         hBtnPrettify = CreateWindowW(L"BUTTON", L"Prettify", WS_CHILD, 20, 60, 150, 30, hWnd, (HMENU)ID_BTN_PRETTIFY, hInst, NULL);
-        // ---- Output Editor for Prettify ----
+        CreateWindowW(L"BUTTON", L"Minify XML", WS_CHILD | WS_VISIBLE, 680, 60, 120, 30, hWnd, (HMENU)ID_BTN_MINIFY, hInst, NULL);
+        hBtnCompress = CreateWindowW(L"BUTTON", L"Compress", WS_CHILD, 50, 250, 320, 100, hWnd, (HMENU)ID_BTN_COMPRESS, hInst, NULL);
+        hBtnDecompress = CreateWindowW(L"BUTTON", L"Decompress", WS_CHILD, 450, 250, 320, 100, hWnd, (HMENU)ID_BTN_DECOMPRESS, hInst, NULL);
 
-        hOutputEditor = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"",WS_CHILD | WS_VISIBLE |ES_MULTILINE |      
-            ES_AUTOVSCROLL |WS_VSCROLL | WS_HSCROLL | ES_READONLY, 445, 100, 415, 500,hWnd, NULL, hInst, NULL);
-
-        ShowWindow(hOutputEditor, SW_HIDE); 
-
-
-
-        hBtnCompress = CreateWindowW(L"BUTTON", L"Compress",
-            WS_CHILD,
-            50, 250, 320, 100,
-            hWnd, (HMENU)ID_BTN_COMPRESS, hInst, NULL);
-
-        hBtnDecompress = CreateWindowW(L"BUTTON", L"Decompress",
-            WS_CHILD,
-            450, 250, 320, 100,
-            hWnd, (HMENU)ID_BTN_DECOMPRESS, hInst, NULL);
-        CreateWindowW(L"BUTTON", L"Minify XML",
-            WS_CHILD | WS_VISIBLE,
-            680, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_MINIFY, hInst, NULL);
-        // Create Editor
+        // ---- Editors ----
         hEditor = CreateWindowEx(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
             WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
@@ -987,50 +938,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             hWnd, (HMENU)ID_EDIT_MAIN, hInst, NULL
         );
 
-        // ---- JSON Tab Controls ----
-            // Buttons for JSON Tab
-        hBtnOpenXmlJson = CreateWindowW(L"BUTTON", L"Open XML",
-            WS_CHILD,
-            20, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_OPEN_XML_JSON, hInst, NULL);
+        hOutputEditor = CreateWindowEx(
+            WS_EX_CLIENTEDGE, L"EDIT", L"",
+            WS_CHILD | WS_VSCROLL | WS_HSCROLL |
+            ES_MULTILINE | ES_LEFT | ES_WANTRETURN | ES_READONLY,
+            445, 100, 415, 500,
+            hWnd,
+            NULL, hInst, NULL
+        );
+        ShowWindow(hOutputEditor, SW_HIDE);
 
-        hBtnConvertJson = CreateWindowW(L"BUTTON", L"Convert to JSON",
-            WS_CHILD,
-            150, 60, 150, 30,
-            hWnd, (HMENU)ID_BTN_CONVERT_JSON, hInst, NULL);
-
-        hBtnSaveJson = CreateWindowW(L"BUTTON", L"Save JSON",
-            WS_CHILD,
-            320, 60, 120, 30,
-            hWnd, (HMENU)ID_BTN_SAVE_JSON, hInst, NULL);
-
-        // Left editor (XML)
+        // JSON Editors (hidden at startup)
         hJsonLeftEdit = CreateWindowEx(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
             WS_CHILD | WS_VSCROLL | WS_HSCROLL |
             ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-            20, 100, 410, 500,
-            hWnd, (HMENU)ID_EDIT_JSON_LEFT, hInst, NULL
+            20, 100, 410, 500, hWnd, (HMENU)ID_EDIT_JSON_LEFT, hInst, NULL
         );
+        ShowWindow(hJsonLeftEdit, SW_HIDE);
 
-        // Right editor (JSON)
         hJsonRightEdit = CreateWindowEx(
             WS_EX_CLIENTEDGE, L"EDIT", L"",
             WS_CHILD | WS_VSCROLL | WS_HSCROLL |
             ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY,
-            440, 100, 410, 500,
-            hWnd, (HMENU)ID_EDIT_JSON_RIGHT, hInst, NULL
+            440, 100, 410, 500, hWnd, (HMENU)ID_EDIT_JSON_RIGHT, hInst, NULL
         );
+        ShowWindow(hJsonRightEdit, SW_HIDE);
 
-        // Set font for better readability
+        // JSON Buttons (hidden at startup)
+        hBtnOpenXmlJson = CreateWindowW(L"BUTTON", L"Open XML", WS_CHILD, 20, 60, 120, 30, hWnd, (HMENU)ID_BTN_OPEN_XML_JSON, hInst, NULL);
+        hBtnConvertJson = CreateWindowW(L"BUTTON", L"Convert to JSON", WS_CHILD, 150, 60, 150, 30, hWnd, (HMENU)ID_BTN_CONVERT_JSON, hInst, NULL);
+        hBtnSaveJson = CreateWindowW(L"BUTTON", L"Save JSON", WS_CHILD, 320, 60, 120, 30, hWnd, (HMENU)ID_BTN_SAVE_JSON, hInst, NULL);
+        ShowWindow(hBtnOpenXmlJson, SW_HIDE);
+        ShowWindow(hBtnConvertJson, SW_HIDE);
+        ShowWindow(hBtnSaveJson, SW_HIDE);
+
+        // Set font
         HFONT hFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
             DEFAULT_QUALITY, FF_MODERN, L"Consolas");
-
+        SendMessage(hEditor, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessage(hOutputEditor, WM_SETFONT, (WPARAM)hFont, TRUE);
         SendMessage(hJsonLeftEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
         SendMessage(hJsonRightEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
     }
-    break;
 
     // ---------------- Tab Change ----------------
     case WM_NOTIFY:
@@ -1039,20 +990,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         if (hdr->idFrom == ID_TAB_MAIN && hdr->code == TCN_SELCHANGE) {
 
             currentTab = TabCtrl_GetCurSel(hTab);
-            BOOL show = (currentTab == 0);
-            BOOL showin_tab3 = (currentTab == 3);
-
             BOOL isVerify = (currentTab == 0);
-            BOOL isLevelTwo = (currentTab == 4);
             BOOL isFormat = (currentTab == 1);
+            BOOL isJson = (currentTab == 2);
             BOOL isCompress = (currentTab == 3);
+            BOOL isLevelTwo = (currentTab == 4);
 
-            
-            // Side-by-Side Logic: Resize hEditor if in Format mode
-            SetWindowPos(hEditor, NULL, 20, 100, isFormat ? 415 : 840, 500, SWP_NOZORDER);
-            ShowWindow(hOutputEditor, isFormat ? SW_SHOW : SW_HIDE);
-            
+            // Show/Hide editors
             ShowWindow(hEditor, (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
+            ShowWindow(hOutputEditor, isFormat ? SW_SHOW : SW_HIDE);
+            ShowWindow(hJsonLeftEdit, isJson ? SW_SHOW : SW_HIDE);
+            ShowWindow(hJsonRightEdit, isJson ? SW_SHOW : SW_HIDE);
+
+            // Show/Hide buttons
             ShowWindow(GetDlgItem(hWnd, ID_BTN_FIX), isVerify ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hWnd, ID_BTN_VALIDATE), isVerify ? SW_SHOW : SW_HIDE);
             ShowWindow(hBtnPrettify, isFormat ? SW_SHOW : SW_HIDE);
@@ -1060,36 +1010,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             ShowWindow(GetDlgItem(hWnd, ID_BTN_SAVE), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
             ShowWindow(hBtnCompress, isCompress ? SW_SHOW : SW_HIDE);
             ShowWindow(hBtnDecompress, isCompress ? SW_SHOW : SW_HIDE);
+            ShowWindow(GetDlgItem(hWnd, ID_BTN_MINIFY), isVerify ? SW_SHOW : SW_HIDE);
 
+            // JSON buttons
+            ShowWindow(hBtnOpenXmlJson, isJson ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnConvertJson, isJson ? SW_SHOW : SW_HIDE);
+            ShowWindow(hBtnSaveJson, isJson ? SW_SHOW : SW_HIDE);
 
-            // Side-by-Side Logic: Resize hEditor if in Format mode
+            // Resize hEditor for Format tab
             SetWindowPos(hEditor, NULL, 20, 100, isFormat ? 415 : 840, 500, SWP_NOZORDER);
-            ShowWindow(hOutputEditor, isFormat ? SW_SHOW : SW_HIDE);
 
-            ShowWindow(hEditor, (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-            ShowWindow(GetDlgItem(hWnd, ID_BTN_FIX), isVerify ? SW_SHOW : SW_HIDE);
-            ShowWindow(GetDlgItem(hWnd, ID_BTN_VALIDATE), isVerify ? SW_SHOW : SW_HIDE);
-            ShowWindow(hBtnPrettify, isFormat ? SW_SHOW : SW_HIDE);
+            // Fix scrollbars
+            if (isFormat) {
+                SendMessage(hOutputEditor, EM_SETSEL, 0, 0);
+                SendMessage(hOutputEditor, EM_SCROLLCARET, 0, 0);
+            }
+            if (isVerify || isFormat) {
+                SendMessage(hEditor, EM_SETSEL, 0, 0);
+                SendMessage(hEditor, EM_SCROLLCARET, 0, 0);
+            }
+            if (isJson) {
+                SendMessage(hJsonLeftEdit, EM_SETSEL, 0, 0);
+                SendMessage(hJsonLeftEdit, EM_SCROLLCARET, 0, 0);
+                SendMessage(hJsonRightEdit, EM_SETSEL, 0, 0);
+                SendMessage(hJsonRightEdit, EM_SCROLLCARET, 0, 0);
+            }
 
-            ShowWindow(GetDlgItem(hWnd, ID_BTN_OPEN), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-            ShowWindow(GetDlgItem(hWnd, ID_BTN_SAVE), (isVerify || isFormat) ? SW_SHOW : SW_HIDE);
-            ShowWindow(hBtnCompress, isCompress ? SW_SHOW : SW_HIDE);
-            ShowWindow(hBtnDecompress, isCompress ? SW_SHOW : SW_HIDE);
-            // JSON Tab (2)
-            BOOL showJson = (currentTab == 2);
-            ShowWindow(hBtnOpenXmlJson, showJson ? SW_SHOW : SW_HIDE);
-            ShowWindow(hBtnConvertJson, showJson ? SW_SHOW : SW_HIDE);
-            ShowWindow(hBtnSaveJson, showJson ? SW_SHOW : SW_HIDE);
-            ShowWindow(hJsonLeftEdit, showJson ? SW_SHOW : SW_HIDE);
-            ShowWindow(hJsonRightEdit, showJson ? SW_SHOW : SW_HIDE);
-            ShowWindow(GetDlgItem(hWnd, ID_BTN_MINIFY), show ? SW_SHOW : SW_HIDE);
-            // Open Level Two window when Level Two tab is clicked
+            // Level Two tab
             if (isLevelTwo) {
                 CreateLevelTwoWindow(hInst);
             }
         }
     }
     break;
+
+
+
 
     // ---------------- Buttons ----------------
     case WM_COMMAND:

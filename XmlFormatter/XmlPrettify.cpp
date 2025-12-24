@@ -12,18 +12,11 @@ std::string XMLTree::trim(const std::string& str) const {
 }
 
 void XMLTree::formatRecursive(TreeNode* node, int level, size_t maxLength, std::string& result) const {
-    // FIX: Only skip if node is null or name is empty. 
-    // Do NOT check for "root" here because that might be your actual XML root tag.
+
     if (!node || node->name.empty()) return;
 
     if (!result.empty()) result += "\r\n";
     std::string indent = getIndentation(level);
-
-    // --- CDATA and Comments ---
-    if (node->name.find("!--") == 0 || node->name.find("![CDATA[") == 0) {
-        result += indent + "<" + node->name + ">";
-        return;
-    }
 
     // --- Attribute Splitting ---
     std::string pureName = node->name;

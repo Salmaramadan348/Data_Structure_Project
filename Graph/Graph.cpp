@@ -93,30 +93,26 @@ vector<int> Graph::mutualFollowers(const vector<int>& ids) {
 
 vector<int> Graph::suggest(int id) {
     vector<int> suggestions;
-    unordered_set<int> myFollowingSet;
-    unordered_set<int> suggestionsSet; // لمنع التكرار
 
-    // 1. الحصول على الأشخاص الذين أتابعهم
-    for (int followingId : outgoing[id]) {
-        myFollowingSet.insert(followingId);
-    }
+    // Step 1: Get followers of the current user
+    const vector<int>& myFollowers = incoming[id];  // incoming = followers
+    if (myFollowers.empty()) return {};
 
-    // 2. إضافة نفسي للمجموعة لألا أقترح نفسي
-    myFollowingSet.insert(id);
+    // Step 2: Build set of excluded users (self + already following)
+    unordered_set<int> excludedUsers(outgoing[id].begin(), outgoing[id].end());
+    excludedUsers.insert(id);  // exclude self
 
-    // 3. لكل صديق أتابعه (متابَع)
-    for (int friendId : outgoing[id]) {
-        // 4. الحصول على الأشخاص الذين يتابعهم هذا الصديق
-        for (int friendOfFriendId : outgoing[friendId]) {
-            // 5. التحقق: ليس أنا، ولا أتابعه بالفعل
-            if (friendOfFriendId != id &&
-                myFollowingSet.find(friendOfFriendId) == myFollowingSet.end()) {
+    // Step 3: Suggestions set to avoid duplicates
+    unordered_set<int> suggestionsSet;
 
-                // إضافة للاقتراحات إذا لم تتم إضافته من قبل
-                if (suggestionsSet.find(friendOfFriendId) == suggestionsSet.end()) {
-                    suggestions.push_back(friendOfFriendId);
-                    suggestionsSet.insert(friendOfFriendId);
-                }
+    // Step 4: Iterate followers
+    for (int followerId : myFollowers) {
+        const vector<int>& followersOfFollower = incoming[followerId]; // followers of my follower
+        for (int candidateId : followersOfFollower) {
+            if (excludedUsers.find(candidateId) == excludedUsers.end() &&
+                suggestionsSet.find(candidateId) == suggestionsSet.end()) {
+                suggestions.push_back(candidateId);
+                suggestionsSet.insert(candidateId);
             }
         }
     }
