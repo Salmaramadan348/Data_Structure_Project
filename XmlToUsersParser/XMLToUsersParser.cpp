@@ -6,7 +6,7 @@
 #include <cctype>
 #include <vector>
 #include <string>
-
+using namespace std;
 
 
 // ---------------- Helper ----------------
