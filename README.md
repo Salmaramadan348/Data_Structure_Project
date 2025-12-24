@@ -41,7 +41,7 @@ Command-Line Operations
 | Operation                 | Command                                              | Description                                                        |
 |----------------------------|------------------------------------------------------|--------------------------------------------------------------------|
 | Check Consistency          | XML_Editor verify -i sample.xml                     | Validate XML and report errors.                                     |
-| Format XML (Prettify)      | XML_Editor formatt -i sample.xml -o output.xml      | Format XML with proper indentation.                                 |
+| Format XML (Prettify)      | XML_Editor format -i sample.xml -o output.xml      | Format XML with proper indentation.                                 |
 | Convert to JSON            | XML_Editor tojson -i sample.xml -o output.json      | Convert XML to JSON format.                                         |
 | Minify XML                 | XML_Editor minify -i sample.xml -o output.xml       | Remove unnecessary spaces and newlines.                             |
 | Compress XML               | XML_Editor compress -i sample.xml -o output.comp    | Compress the XML file.                                              |
